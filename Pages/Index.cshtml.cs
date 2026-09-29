@@ -9,10 +9,12 @@ public class IndexModel : PageModel
 {
     public List<Tender> HeroTenders { get; set; } = new();
     public List<Tier> Tiers { get; set; } = MockData.Tiers;
+    public List<string> IssuingEntities { get; set; } = new();
 
     public void OnGet()
     {
         HeroTenders = MockData.Tenders.Take(3).ToList();
+        IssuingEntities = MockData.Tenders.Select(t => t.Entity).Distinct().ToList();
     }
 
     public IActionResult OnPostContact(string name, string email, string message)

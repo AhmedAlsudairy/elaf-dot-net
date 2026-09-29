@@ -17,10 +17,10 @@
                 <a class="btn btn-secondary" href="/Account/SignUp">List your company</a>
             </div>
             <div class="stat-strip">
-                <div><strong>1,240</strong><span>Open tenders</span></div>
-                <div><strong>3,800</strong><span>Verified companies</span></div>
-                <div><strong>OMR 480M</strong><span>Active tender value</span></div>
-                <div><strong>18</strong><span>Government entities</span></div>
+                <div><svg class="icon"><use href="#i-grid"></use></svg><strong>1,240</strong><span>Open tenders</span></div>
+                <div><svg class="icon"><use href="#i-building"></use></svg><strong>3,800</strong><span>Verified companies</span></div>
+                <div><svg class="icon"><use href="#i-shield"></use></svg><strong>OMR 480M</strong><span>Active tender value</span></div>
+                <div><svg class="icon"><use href="#i-briefcase"></use></svg><strong>18</strong><span>Government entities</span></div>
             </div>
         </div>
         <div class="hero-stack">
@@ -31,7 +31,19 @@
         </div>
     </div>
 
-    <div class="section" id="how">
+    <div class="entity-strip">
+        <span class="label">Currently listing tenders from</span>
+        @for (int i = 0; i < Model.IssuingEntities.Count; i++)
+        {
+            <span class="name">@Model.IssuingEntities[i]</span>
+            if (i < Model.IssuingEntities.Count - 1)
+            {
+                <span style="color:var(--border-strong)">&middot;</span>
+            }
+        }
+    </div>
+
+    <div class="section section-band" id="how">
         <div class="section-head">
             <span class="eyebrow">How it works</span>
             <h2>One workspace, two sides of the same tender.</h2>

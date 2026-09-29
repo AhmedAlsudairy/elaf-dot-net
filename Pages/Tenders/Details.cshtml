@@ -27,7 +27,7 @@
                 <h1>@Model.Tender.Title</h1>
                 <p class="detail-meta">@Model.Tender.Entity &middot; Tender No. <span class="mono">@Model.Tender.TenderNo</span> &middot; Ext. ID <span class="mono">@Model.Tender.ExtId</span></p>
             </div>
-            <div style="display:flex;gap:8px">
+            <div class="detail-actions">
                 <button type="button" class="btn btn-secondary btn-sm" data-saved="false" onclick="toggleSave(event, this)">
                     <svg class="icon" style="width:15px;height:15px"><use href="#i-bookmark"></use></svg>
                     <span class="save-label">Save</span>

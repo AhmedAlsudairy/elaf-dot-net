@@ -87,14 +87,30 @@
   window.selectAccountType = function (type) {
     var clientPick = document.getElementById("pick-client");
     var contractorPick = document.getElementById("pick-contractor");
+    var individualPick = document.getElementById("pick-individual");
     if (clientPick) clientPick.classList.toggle("is-active", type === "client");
     if (contractorPick) contractorPick.classList.toggle("is-active", type === "contractor");
+    if (individualPick) individualPick.classList.toggle("is-active", type === "individual");
     var hidden = document.getElementById("accountType");
     if (hidden) hidden.value = type;
     var cont = document.getElementById("su-continue");
     if (cont) cont.disabled = false;
+
+    var isIndividual = type === "individual";
+    var orgField = document.getElementById("suOrgField");
+    var orgInput = document.getElementById("suOrg");
     var orgLabel = document.getElementById("suOrgLabel");
+    if (orgField) orgField.hidden = isIndividual;
+    if (orgInput) {
+      if (isIndividual) orgInput.removeAttribute("required");
+      else orgInput.setAttribute("required", "");
+    }
     if (orgLabel) orgLabel.textContent = type === "client" ? "Organization name" : "Company name";
+
+    var emailLabel = document.getElementById("suEmailLabel");
+    var emailInput = document.getElementById("suEmail");
+    if (emailLabel) emailLabel.textContent = isIndividual ? "Email" : "Work email";
+    if (emailInput) emailInput.placeholder = isIndividual ? "you@example.com" : "you@company.om";
   };
   window.goSignupStep2 = function () {
     document.getElementById("su-step1").hidden = true;

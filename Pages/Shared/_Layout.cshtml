@@ -6,8 +6,10 @@
     var roleLabels = new Dictionary<string, string> {
         ["client"] = "Client organization",
         ["contractor"] = "Service contractor",
+        ["individual"] = "Individual account",
         ["admin"] = "Platform admin"
     };
+    if (!roleLabels.ContainsKey(role)) role = "client";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -33,6 +35,7 @@
                         <select id="roleSwitch">
                             <option value="client" selected="@(role == "client" ? "selected" : null)">Client organization</option>
                             <option value="contractor" selected="@(role == "contractor" ? "selected" : null)">Service contractor</option>
+                            <option value="individual" selected="@(role == "individual" ? "selected" : null)">Individual user</option>
                             <option value="admin" selected="@(role == "admin" ? "selected" : null)">Platform admin</option>
                         </select>
                     </div>

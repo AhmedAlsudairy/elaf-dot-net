@@ -224,7 +224,7 @@ footer.m-footer{border-top:1px solid var(--border);margin-top:20px}
 .role-switcher select{font-size:12.5px;padding:7px 9px}
 
 .app-topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb, var(--surface) 92%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
-.app-search{flex:1;max-width:420px;position:relative}
+.app-search{flex:1;min-width:0;max-width:420px;position:relative}
 .app-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-faint)}
 .app-search input{padding-left:34px}
 .app-topbar-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
@@ -271,8 +271,8 @@ main.app-main{flex:1;min-width:0;max-width:1180px;margin:0 auto;width:100%;paddi
 .delta-up{color:var(--green)} .delta-down{color:var(--red)}
 
 /* tabs */
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:22px}
-.tab{padding:10px 4px;margin-right:20px;font-weight:600;font-size:13.5px;color:var(--ink-faint);cursor:pointer;border-bottom:2px solid transparent;position:relative;top:1px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:22px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:10px 4px;margin-right:20px;font-weight:600;font-size:13.5px;color:var(--ink-faint);cursor:pointer;border-bottom:2px solid transparent;position:relative;top:1px;white-space:nowrap;flex-shrink:0}
 .tab:hover{color:var(--ink-soft)}
 .tab.is-active{color:var(--accent-ink);border-color:var(--accent)}
 
@@ -353,7 +353,9 @@ tbody tr:hover{background:var(--surface-2)}
 .settings-panel p.desc{color:var(--ink-soft);font-size:13px;margin-bottom:24px}
 .form-section{padding-block:22px;border-top:1px solid var(--border)}
 .form-section:first-of-type{border-top:none;padding-top:0}
-.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;flex-wrap:wrap}
+.form-actions-group{display:flex;gap:10px;flex-wrap:wrap}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
 .notif-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--border)}
 .notif-row:first-child{border-top:none}
 .notif-row strong{display:block;font-size:13.5px}
@@ -373,7 +375,7 @@ tbody tr:hover{background:var(--surface-2)}
 .cf-row{display:grid;grid-template-columns:1fr 1.6fr auto;gap:12px;align-items:start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--border)}
 .cf-row:last-of-type{border-bottom:none}
 .remove-row-btn{margin-top:2px}
-.sticky-formbar{position:sticky;bottom:0;background:color-mix(in srgb, var(--canvas) 90%, transparent);backdrop-filter:blur(6px);padding:16px 0 0;display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--border);margin-top:8px}
+.sticky-formbar{position:sticky;bottom:0;background:color-mix(in srgb, var(--canvas) 90%, transparent);backdrop-filter:blur(6px);padding:16px 0 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--border);margin-top:8px}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--canvas);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:.25s;z-index:100;box-shadow:var(--shadow-md)}
 .toast.is-shown{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -438,4 +440,28 @@ tbody tr:hover{background:var(--surface-2)}
   .auth-brand-panel{display:none}
   .cf-row{grid-template-columns:1fr}
   .tcard{flex-wrap:wrap}
+  .co-bars{min-width:0;width:100%}
+  .app-topbar .who{display:none}
+  .role-pick-grid{gap:10px}
+  .role-pick{padding:14px}
+}
+@media (max-width:480px){
+  body{font-size:13.5px}
+  .hero h1{font-size:28px}
+  .section{padding-block:40px}
+  .feat-grid,.tier-grid,.stat-grid,.stat-strip{grid-template-columns:1fr}
+  .topbar-inner,.app-topbar{padding-inline:16px}
+  main.app-main{padding-inline:16px}
+  main.m-main{padding-inline:16px}
+  .card,.form-card,.side-card,.settings-panel,.filter-card{padding:16px}
+  .co-header{padding:18px}
+  .co-logo{width:58px;height:58px;font-size:20px}
+  .auth-form-panel{padding-inline:16px}
+  .sticky-formbar{flex-direction:column;align-items:stretch}
+  .sticky-formbar .form-actions-group{width:100%}
+  .sticky-formbar .form-actions-group .btn{flex:1}
+  .detail-actions{width:100%}
+  .detail-actions .btn{flex:1}
+  .tier{padding:20px}
+  .hero-cta .btn{flex:1;justify-content:center}
 }

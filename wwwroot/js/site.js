@@ -55,11 +55,46 @@
     });
   });
 
-  /* ---------------- mobile sidebar ---------------- */
+  /* ---------------- mobile sidebar (app shell) ---------------- */
   var menuBtn = document.getElementById("menuBtn");
   var sidebar = document.getElementById("sidebar");
+  var sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  var sidebarClose = document.getElementById("sidebarClose");
+
+  function openSidebar() {
+    if (sidebar) sidebar.classList.add("is-open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeSidebar() {
+    if (sidebar) sidebar.classList.remove("is-open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove("is-open");
+    document.body.style.overflow = "";
+  }
   if (menuBtn && sidebar) {
-    menuBtn.addEventListener("click", function () { sidebar.classList.toggle("is-open"); });
+    menuBtn.addEventListener("click", function () {
+      if (sidebar.classList.contains("is-open")) closeSidebar();
+      else openSidebar();
+    });
+  }
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeSidebar);
+  if (sidebarClose) sidebarClose.addEventListener("click", closeSidebar);
+
+  /* ---------------- mobile menu (marketing header) ---------------- */
+  var marketingMenuBtn = document.getElementById("marketingMenuBtn");
+  var marketingMobileNav = document.getElementById("marketingMobileNav");
+  if (marketingMenuBtn && marketingMobileNav) {
+    marketingMenuBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = marketingMobileNav.classList.toggle("is-open");
+      marketingMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("click", function (e) {
+      if (!marketingMobileNav.classList.contains("is-open")) return;
+      if (marketingMobileNav.contains(e.target) || marketingMenuBtn.contains(e.target)) return;
+      marketingMobileNav.classList.remove("is-open");
+      marketingMenuBtn.setAttribute("aria-expanded", "false");
+    });
   }
 
   /* ---------------- role switcher (persists via cookie, reloads for server-rendered nav) ---------------- */

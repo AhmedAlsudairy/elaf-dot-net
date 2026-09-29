@@ -27,7 +27,10 @@
     {
         <div id="app-shell">
             <aside class="sidebar" id="sidebar">
-                <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
+                    <button type="button" class="btn-icon sidebar-close" id="sidebarClose" aria-label="Close menu"><svg class="icon"><use href="#i-x"></use></svg></button>
+                </div>
 
                 <form id="roleForm">
                     <div class="role-switcher">
@@ -62,6 +65,7 @@
                     <a class="side-link" href="/"><svg class="icon"><use href="#i-arrow-left"></use></svg> Sign out</a>
                 </div>
             </aside>
+            <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
             <div style="flex:1;min-width:0;display:flex;flex-direction:column">
                 <header class="app-topbar">
@@ -96,10 +100,23 @@
                 </nav>
                 <div class="m-actions">
                     <button type="button" class="lang-toggle" onclick="toggleLang()"><svg class="icon" style="width:14px;height:14px"><use href="#i-globe"></use></svg><span id="langLabel">EN</span></button>
-                    <a class="btn btn-ghost btn-sm" href="/Account/SignIn">Sign in</a>
+                    <a class="btn btn-ghost btn-sm m-signin" href="/Account/SignIn">Sign in</a>
                     <a class="btn btn-primary btn-sm" href="/Account/SignUp">Get started</a>
+                    <button type="button" class="btn-icon menu-btn" id="marketingMenuBtn" aria-label="Open menu" aria-expanded="false">
+                        <svg class="icon"><use href="#i-menu"></use></svg>
+                    </button>
                 </div>
             </div>
+            <nav class="mobile-nav" id="marketingMobileNav">
+                <a href="/">Home</a>
+                <a href="/Tenders">Browse tenders</a>
+                <a href="/#pricing">Pricing</a>
+                <a href="/#contact">Contact</a>
+                <div class="mobile-nav-actions">
+                    <a class="btn btn-secondary btn-block" href="/Account/SignIn">Sign in</a>
+                    <a class="btn btn-primary btn-block" href="/Account/SignUp">Get started</a>
+                </div>
+            </nav>
         </header>
 
         @RenderBody()

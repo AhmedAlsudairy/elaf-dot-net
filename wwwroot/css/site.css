@@ -1,6 +1,6 @@
 /* ============ RESET ============ */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 
@@ -146,6 +146,11 @@ label.field-label{display:block;font-size:12.5px;font-weight:600;color:var(--ink
 .m-actions{display:flex;align-items:center;gap:10px}
 .lang-toggle{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--ink-soft);padding:8px 10px;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:none}
 .lang-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.mobile-nav{display:none;flex-direction:column;gap:2px;padding:8px 24px 20px;border-top:1px solid var(--border);background:var(--surface)}
+.mobile-nav.is-open{display:flex}
+.mobile-nav a{padding:11px 8px;border-radius:8px;font-size:14px;font-weight:600;color:var(--ink-soft)}
+.mobile-nav a:hover{background:var(--surface-2);color:var(--ink)}
+.mobile-nav-actions{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding-top:14px;border-top:1px solid var(--border)}
 main.m-main{max-width:1240px;margin:0 auto;padding:0 24px}
 
 .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding-block:64px 40px}
@@ -237,6 +242,9 @@ footer.m-footer{border-top:1px solid var(--border);margin-top:20px}
 .avatar-chip .who strong{display:block;font-size:12.5px}
 .avatar-chip .who span{font-size:11px;color:var(--ink-faint)}
 .menu-btn{display:none;background:none;border:none}
+.sidebar-close{display:none;background:none;border:none}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(15,14,26,.45);z-index:45}
+.sidebar-backdrop.is-open{display:block}
 
 main.app-main{flex:1;min-width:0;max-width:1180px;margin:0 auto;width:100%;padding:26px 24px 60px}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
@@ -426,7 +434,9 @@ tbody tr:hover{background:var(--surface-2)}
   .layout-2col,.detail-grid,.settings-layout{grid-template-columns:1fr}
   .filter-card{position:static}
   .m-nav{display:none}
+  .lang-toggle,.m-signin{display:none}
   .menu-btn{display:flex}
+  .sidebar-close{display:flex;align-items:center;justify-content:center}
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);box-shadow:var(--shadow-md)}
   .sidebar.is-open{transform:translateX(0)}
   .co-summary{margin-left:0;width:100%;justify-content:space-between}

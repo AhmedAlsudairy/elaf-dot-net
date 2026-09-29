@@ -1,0 +1,26 @@
+@using Munaqasat.Web.Models
+@model Tier
+<div class="tier @(Model.Highlight ? "tier--highlight" : "")">
+    @if (Model.Highlight)
+    {
+        <span class="badge badge-popular tier-badge">Most popular</span>
+    }
+    <div>
+        <div class="tier-name">@Model.Name</div>
+        <div class="tier-desc">@Model.Desc</div>
+    </div>
+    <div class="tier-price">
+        <strong>@(Model.Price == "Custom" ? "Custom" : "OMR " + Model.Price)</strong>
+        @if (Model.Price != "Custom")
+        {
+            <span>/ month</span>
+        }
+    </div>
+    <ul class="tier-feats">
+        @foreach (var f in Model.Features)
+        {
+            <li><svg class="icon"><use href="#i-check"></use></svg>@f</li>
+        }
+    </ul>
+    <a class="btn @(Model.Highlight ? "btn-primary" : "btn-secondary") btn-block" href="/Account/SignUp">@Model.Cta</a>
+</div>

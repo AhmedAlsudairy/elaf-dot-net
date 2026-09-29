@@ -1,0 +1,124 @@
+@{
+    var title = ViewData["Title"] as string ?? "Munaqasat";
+    var appShell = (bool?)ViewData["AppShell"] ?? false;
+    var activeNav = ViewData["ActiveNav"] as string ?? "";
+    var role = Context.Request.Cookies["munaqasat_role"] ?? "client";
+    var roleLabels = new Dictionary<string, string> {
+        ["client"] = "Client organization",
+        ["contractor"] = "Service contractor",
+        ["admin"] = "Platform admin"
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title &middot; Munaqasat</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_IconSprite" />
+
+    @if (appShell)
+    {
+        <div id="app-shell">
+            <aside class="sidebar" id="sidebar">
+                <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
+
+                <form id="roleForm">
+                    <div class="role-switcher">
+                        <label for="roleSwitch">Viewing as</label>
+                        <select id="roleSwitch">
+                            <option value="client" selected="@(role == "client" ? "selected" : null)">Client organization</option>
+                            <option value="contractor" selected="@(role == "contractor" ? "selected" : null)">Service contractor</option>
+                            <option value="admin" selected="@(role == "admin" ? "selected" : null)">Platform admin</option>
+                        </select>
+                    </div>
+                </form>
+
+                <nav class="side-nav">
+                    <a class="side-link @(activeNav == "tenders" ? "is-active" : "")" href="/Tenders"><svg class="icon"><use href="#i-grid"></use></svg> Browse tenders</a>
+                    @if (role == "client" || role == "admin")
+                    {
+                        <a class="side-link @(activeNav == "tender-form" ? "is-active" : "")" href="/Tenders/Create"><svg class="icon"><use href="#i-plus"></use></svg> Post a tender</a>
+                    }
+                    @if (role == "client" || role == "contractor")
+                    {
+                        <a class="side-link @(activeNav == "company" ? "is-active" : "")" href="/Companies/Profile/c1"><svg class="icon"><use href="#i-building"></use></svg> Company profile</a>
+                    }
+                    @if (role == "admin")
+                    {
+                        <a class="side-link @(activeNav == "admin" ? "is-active" : "")" href="/Admin"><svg class="icon"><use href="#i-shield"></use></svg> Admin console</a>
+                    }
+                    <a class="side-link @(activeNav == "settings" ? "is-active" : "")" href="/Settings"><svg class="icon"><use href="#i-settings"></use></svg> Settings</a>
+                </nav>
+
+                <div style="margin-top:auto">
+                    <a class="side-link" href="/"><svg class="icon"><use href="#i-arrow-left"></use></svg> Sign out</a>
+                </div>
+            </aside>
+
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+                <header class="app-topbar">
+                    <button class="btn-icon menu-btn" id="menuBtn" type="button"><svg class="icon"><use href="#i-menu"></use></svg></button>
+                    <div class="app-search"><svg class="icon"><use href="#i-search"></use></svg><input type="text" placeholder="Search tenders, companies, tender no&hellip;" /></div>
+                    <div class="app-topbar-actions">
+                        <div class="icon-btn"><svg class="icon"><use href="#i-globe"></use></svg></div>
+                        <div class="icon-btn"><svg class="icon"><use href="#i-bell"></use></svg><span class="dot"></span></div>
+                        <a class="avatar-chip" href="/Settings">
+                            <div class="avatar">AR</div>
+                            <div class="who"><strong>Ahmed Al Rawahi</strong><span>@roleLabels[role]</span></div>
+                            <svg class="icon" style="width:14px;height:14px;color:var(--ink-faint)"><use href="#i-chevron-down"></use></svg>
+                        </a>
+                    </div>
+                </header>
+                <main class="app-main">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <header class="shell-topbar">
+            <div class="topbar-inner">
+                <a class="brand" href="/"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat<small>Tender marketplace</small></div></a>
+                <nav class="m-nav">
+                    <a href="/">Home</a>
+                    <a href="/Tenders">Browse tenders</a>
+                    <a href="/#pricing">Pricing</a>
+                    <a href="/#contact">Contact</a>
+                </nav>
+                <div class="m-actions">
+                    <button type="button" class="lang-toggle" onclick="toggleLang()"><svg class="icon" style="width:14px;height:14px"><use href="#i-globe"></use></svg><span id="langLabel">EN</span></button>
+                    <a class="btn btn-ghost btn-sm" href="/Account/SignIn">Sign in</a>
+                    <a class="btn btn-primary btn-sm" href="/Account/SignUp">Get started</a>
+                </div>
+            </div>
+        </header>
+
+        @RenderBody()
+
+        <footer class="m-footer">
+            <div class="footer-inner">
+                <div class="footer-col">
+                    <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
+                    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:14px;max-width:32ch">The bilingual tender marketplace connecting Omani organizations with qualified contractors and suppliers.</p>
+                </div>
+                <div class="footer-col"><h4>Product</h4><a href="/Tenders">Browse tenders</a><a href="/#pricing">Pricing</a><a href="/Account/SignUp">List your company</a></div>
+                <div class="footer-col"><h4>Company</h4><a href="/#contact">Contact</a><a href="/Account/SignIn">Admin login</a></div>
+                <div class="footer-col"><h4>Legal</h4><a href="#">Terms of service</a><a href="#">Privacy policy</a></div>
+            </div>
+            <div class="footer-bottom"><span>&copy; 2026 Munaqasat. All rights reserved.</span><span>Muscat, Oman</span></div>
+        </footer>
+    }
+
+    <div id="toast-message" hidden>@TempData["Toast"]</div>
+    <div class="toast" id="toast"><svg class="icon"><use href="#i-check"></use></svg><span id="toastText">Saved</span></div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

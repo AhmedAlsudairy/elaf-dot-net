@@ -1,0 +1,122 @@
+@page "{id}"
+@model DetailsModel
+@{
+    ViewData["Title"] = Model.Tender.Title;
+    ViewData["AppShell"] = true;
+    ViewData["ActiveNav"] = "tenders";
+    double r = 26;
+    double c = 2 * Math.PI * r;
+    double off = c * (1 - Model.Tender.Score / 100.0);
+    var ci = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+<a href="/Tenders" style="display:inline-block;font-size:12.5px;color:var(--ink-faint);margin-bottom:10px">&larr; Back to tenders</a>
+
+<div class="detail-grid">
+    <div>
+        <div class="detail-header">
+            <div>
+                <div style="display:flex;gap:8px;margin-bottom:10px">
+                    <span class="pill-status status-open">Open</span>
+                    <span class="tag @Model.Tender.CategoryTagClass">@Model.Tender.CategoryLabel</span>
+                    @if (Model.Tender.IsNew)
+                    {
+                        <span class="badge badge-new">New</span>
+                    }
+                </div>
+                <h1>@Model.Tender.Title</h1>
+                <p class="detail-meta">@Model.Tender.Entity &middot; Tender No. <span class="mono">@Model.Tender.TenderNo</span> &middot; Ext. ID <span class="mono">@Model.Tender.ExtId</span></p>
+            </div>
+            <div style="display:flex;gap:8px">
+                <button type="button" class="btn btn-secondary btn-sm" data-saved="false" onclick="toggleSave(event, this)">
+                    <svg class="icon" style="width:15px;height:15px"><use href="#i-bookmark"></use></svg>
+                    <span class="save-label">Save</span>
+                </button>
+                <a class="btn btn-primary btn-sm" href="#request-card">Submit a request</a>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab is-active" data-tab-group="detail" data-tab-value="overview">Overview</div>
+            <div class="tab" data-tab-group="detail" data-tab-value="requests">Requests <span class="tag tag-purple" style="margin-left:4px">@Model.Requests.Count</span></div>
+        </div>
+
+        <div data-tab-panel="detail" data-tab-value="overview">
+            <div class="card" style="padding:22px 24px;margin-bottom:20px">
+                <h3 style="font-size:14px;margin-bottom:2px">Key dates &amp; terms</h3>
+                <div class="kv-grid">
+                    <div class="kv"><span class="k">Published</span><span class="v">@Model.Tender.Published.ToString("d MMM yyyy")</span></div>
+                    <div class="kv"><span class="k">Bid submission closing</span><span class="v">@Model.Tender.Closing.ToString("d MMM yyyy")</span></div>
+                    <div class="kv"><span class="k">Governorate / Wilayat</span><span class="v">@Model.Tender.Governorate / @Model.Tender.Wilayat</span></div>
+                    <div class="kv"><span class="k">Estimated budget</span><span class="v">@Model.Tender.BudgetLabel</span></div>
+                    <div class="kv"><span class="k">Document fee</span><span class="v">@Model.Tender.DocFee</span></div>
+                    <div class="kv"><span class="k">Bid bond</span><span class="v">@Model.Tender.Bond</span></div>
+                </div>
+            </div>
+            <div class="card" style="padding:22px 24px;margin-bottom:20px">
+                <h3 style="font-size:14px;margin-bottom:10px">Description</h3>
+                <p class="prose">@Model.Tender.Description</p>
+            </div>
+            <div class="card" style="padding:22px 24px">
+                <h3 style="font-size:14px;margin-bottom:4px">Additional requirements</h3>
+                @foreach (var f in Model.Tender.CustomFields)
+                {
+                    <div class="cf-item"><h4>@f.Title</h4><p>@f.Description</p></div>
+                }
+            </div>
+        </div>
+
+        <div data-tab-panel="detail" data-tab-value="requests" hidden>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Company</th><th>Price (OMR)</th><th>Delivery days</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+                    <tbody>
+                        @if (Model.Requests.Count == 0)
+                        {
+                            <tr><td colspan="6" style="text-align:center;color:var(--ink-faint);padding:30px">No requests submitted yet.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var req in Model.Requests)
+                            {
+                                <tr>
+                                    <td class="cell-primary">@req.Company</td>
+                                    <td class="mono">@req.Price.ToString("N0")</td>
+                                    <td>@req.Days</td>
+                                    <td><span class="pill-status @req.StatusClass">@req.Status</span></td>
+                                    <td>@req.Date.ToString("d MMM yyyy")</td>
+                                    <td class="row-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="showToast('Opened conversation with @req.Company')">Message</button></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="side-card" id="request-card">
+            <h3>Your match for this tender</h3>
+            <div class="match-row">
+                <div class="ring ring--@Model.Tender.ScoreTier">
+                    <svg viewBox="0 0 64 64">
+                        <circle class="ring-track" cx="32" cy="32" r="@r.ToString(ci)"></circle>
+                        <circle class="ring-val" cx="32" cy="32" r="@r.ToString(ci)" stroke-dasharray="@c.ToString("F2", ci)" stroke-dashoffset="@off.ToString("F2", ci)" stroke-linecap="round"></circle>
+                    </svg>
+                    <span class="ring-num">@Model.Tender.Score</span>
+                </div>
+                <div class="txt"><strong>@Model.Tender.MatchLabel</strong><span>Based on your sectors &amp; grade</span></div>
+            </div>
+            <div class="countdown"><span>Document sale ends</span><span>@Model.Tender.Closing.ToString("d MMM yyyy")</span></div>
+            <div class="countdown"><span>Bid submission closes</span><span>@Model.Tender.Closing.ToString("d MMM yyyy")</span></div>
+            <div class="countdown"><span>Document fee</span><span>@Model.Tender.DocFee</span></div>
+            <div class="countdown"><span>Bond required</span><span>@Model.Tender.Bond</span></div>
+            <button type="button" class="btn btn-primary btn-block" style="margin-top:16px" onclick="showToast('Request submitted')">Submit a request</button>
+        </div>
+        <div class="side-card">
+            <h3>Issued by</h3>
+            <div class="company-mini"><div class="avatar">@(Model.Tender.Entity.Length >= 2 ? Model.Tender.Entity.Substring(0,2).ToUpper() : Model.Tender.Entity.ToUpper())</div><div><strong>@Model.Tender.Entity</strong><span class="stars">Government entity</span></div></div>
+        </div>
+    </div>
+</div>

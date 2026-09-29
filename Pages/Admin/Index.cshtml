@@ -1,0 +1,157 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Admin console";
+    ViewData["AppShell"] = true;
+    ViewData["ActiveNav"] = "admin";
+}
+
+<div class="page-head"><div><h1>Admin console</h1><p class="sub">Platform-wide oversight of tenders, companies and requests.</p></div></div>
+<div class="tabs">
+    <div class="tab is-active" data-tab-group="admin" data-tab-value="dashboard">Dashboard</div>
+    <div class="tab" data-tab-group="admin" data-tab-value="tenders">Tenders</div>
+    <div class="tab" data-tab-group="admin" data-tab-value="companies">Companies</div>
+    <div class="tab" data-tab-group="admin" data-tab-value="users">Users</div>
+    <div class="tab" data-tab-group="admin" data-tab-value="requests">Requests</div>
+</div>
+
+<div data-tab-panel="admin" data-tab-value="dashboard">
+    <div class="stat-grid">
+        <div class="stat-tile"><div class="top"><span class="ico" style="background:var(--accent-soft);color:var(--accent-ink)"><svg class="icon"><use href="#i-grid"></use></svg></span><span class="delta delta-up">+12%</span></div><strong>1,240</strong><span class="label">Total tenders</span></div>
+        <div class="stat-tile"><div class="top"><span class="ico" style="background:var(--green-soft);color:var(--green)"><svg class="icon"><use href="#i-check"></use></svg></span><span class="delta delta-up">+4%</span></div><strong>318</strong><span class="label">Open tenders</span></div>
+        <div class="stat-tile"><div class="top"><span class="ico" style="background:var(--blue-soft);color:var(--blue)"><svg class="icon"><use href="#i-users"></use></svg></span><span class="delta delta-up">+8%</span></div><strong>3,800</strong><span class="label">Registered companies</span></div>
+        <div class="stat-tile"><div class="top"><span class="ico" style="background:var(--orange-soft);color:var(--orange)"><svg class="icon"><use href="#i-clock"></use></svg></span><span class="delta delta-down">&minus;3%</span></div><strong>96</strong><span class="label">Pending requests</span></div>
+    </div>
+    <h3 style="font-size:14px;margin-bottom:12px">Recently published tenders</h3>
+    <div class="table-wrap" style="margin-bottom:26px">
+        <table>
+            <thead><tr><th>Tender</th><th>Category</th><th>Closing</th><th>Status</th><th>Match avg.</th></tr></thead>
+            <tbody>
+                @foreach (var t in Model.Tenders.Take(4))
+                {
+                    <tr>
+                        <td class="cell-primary">@t.Title<div class="cell-sub">@t.TenderNo</div></td>
+                        <td><span class="tag @t.CategoryTagClass">@t.CategoryLabel</span></td>
+                        <td>@t.Closing.ToString("d MMM yyyy")</td>
+                        <td><span class="pill-status status-open">Open</span></td>
+                        <td class="mono">@t.Score</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <h3 style="font-size:14px;margin-bottom:12px">Requests awaiting review</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Company</th><th>Tender</th><th>Price (OMR)</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.PendingRequests)
+                {
+                    var t = Model.Tenders.FirstOrDefault(x => x.Id == r.TenderId);
+                    <tr>
+                        <td class="cell-primary">@r.Company</td>
+                        <td>@(t?.Title)</td>
+                        <td class="mono">@r.Price.ToString("N0")</td>
+                        <td><span class="pill-status @r.StatusClass">@r.Status</span></td>
+                        <td class="row-actions">
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="adminSetStatus(this,'ACCEPTED')">Accept</button>
+                            <button type="button" class="btn btn-danger-ghost btn-sm" onclick="adminSetStatus(this,'REJECTED')">Reject</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div data-tab-panel="admin" data-tab-value="tenders" hidden>
+    <div class="row-between" style="margin-bottom:14px">
+        <span class="results-count">@Model.Tenders.Count tenders</span>
+        <a class="btn btn-primary btn-sm" href="/Tenders/Create"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"></use></svg> New tender</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Tender</th><th>Entity</th><th>Category</th><th>Closing</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var t in Model.Tenders)
+                {
+                    <tr>
+                        <td class="cell-primary">@t.Title<div class="cell-sub mono">@t.TenderNo</div></td>
+                        <td>@t.Entity</td>
+                        <td><span class="tag @t.CategoryTagClass">@t.CategoryLabel</span></td>
+                        <td>@t.Closing.ToString("d MMM yyyy")</td>
+                        <td><span class="pill-status status-open">Open</span></td>
+                        <td class="row-actions">
+                            <a class="icon-btn btn-icon" href="/Tenders/Details/@t.Id"><svg class="icon" style="width:15px;height:15px"><use href="#i-chevron-right"></use></svg></a>
+                            <a class="icon-btn btn-icon" href="/Tenders/Create"><svg class="icon" style="width:15px;height:15px"><use href="#i-edit"></use></svg></a>
+                            <button type="button" class="icon-btn btn-icon" onclick="this.closest('tr').remove()"><svg class="icon" style="width:15px;height:15px"><use href="#i-trash"></use></svg></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div data-tab-panel="admin" data-tab-value="companies" hidden>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Company</th><th>Sectors</th><th>Rating</th><th>Ratings count</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.Companies)
+                {
+                    <tr>
+                        <td class="cell-primary">@c.Name</td>
+                        <td>@c.Sectors</td>
+                        <td class="mono">@c.Rating.ToString("0.0")</td>
+                        <td>@c.Count</td>
+                        <td><span class="pill-status @(c.Status == "Verified" ? "status-open" : "status-pending")">@c.Status</span></td>
+                        <td class="row-actions"><a class="btn btn-ghost btn-sm" href="/Companies/Profile/c1">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div data-tab-panel="admin" data-tab-value="users" hidden>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Company</th><th>Joined</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var u in Model.Users)
+                {
+                    <tr>
+                        <td class="cell-primary">@u.Name</td>
+                        <td>@u.Email</td>
+                        <td><span class="tag tag-neutral">@u.Role</span></td>
+                        <td>@u.Company</td>
+                        <td>@u.Joined.ToString("d MMM yyyy")</td>
+                        <td class="row-actions"><button type="button" class="icon-btn btn-icon"><svg class="icon" style="width:15px;height:15px"><use href="#i-edit"></use></svg></button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div data-tab-panel="admin" data-tab-value="requests" hidden>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Company</th><th>Tender</th><th>Price (OMR)</th><th>Days</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.Requests)
+                {
+                    var t = Model.Tenders.FirstOrDefault(x => x.Id == r.TenderId);
+                    <tr>
+                        <td class="cell-primary">@r.Company</td>
+                        <td>@(t?.Title)</td>
+                        <td class="mono">@r.Price.ToString("N0")</td>
+                        <td>@r.Days</td>
+                        <td><span class="pill-status @r.StatusClass">@r.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

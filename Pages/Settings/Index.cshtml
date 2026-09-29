@@ -1,0 +1,114 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Settings";
+    ViewData["AppShell"] = true;
+    ViewData["ActiveNav"] = "settings";
+}
+
+<div class="page-head"><div><h1>Settings</h1><p class="sub">Manage your profile, company and platform preferences.</p></div></div>
+<div class="settings-layout">
+    <nav class="settings-nav">
+        <div class="side-link is-active" data-tab-group="settings" data-tab-value="profile"><svg class="icon"><use href="#i-user"></use></svg> Profile</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="company"><svg class="icon"><use href="#i-building"></use></svg> Company</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="notifications"><svg class="icon"><use href="#i-bell"></use></svg> Notifications</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="language"><svg class="icon"><use href="#i-globe"></use></svg> Language &amp; region</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="billing"><svg class="icon"><use href="#i-shield"></use></svg> Billing &amp; plan</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="security"><svg class="icon"><use href="#i-settings"></use></svg> Security</div>
+    </nav>
+
+    <div class="settings-panel">
+        <div data-tab-panel="settings" data-tab-value="profile">
+            <h2>Profile</h2><p class="desc">This information appears on requests and messages you send.</p>
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="section" value="profile" />
+                <div class="form-section">
+                    <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px">
+                        <div class="avatar avatar-lg">AR</div>
+                        <button type="button" class="btn btn-secondary btn-sm"><svg class="icon" style="width:15px;height:15px"><use href="#i-upload"></use></svg> Upload photo</button>
+                    </div>
+                    <div class="field-stack">
+                        <div class="field-row">
+                            <div class="field"><label class="field-label" for="pName">Full name</label><input id="pName" type="text" value="Ahmed Al Rawahi"></div>
+                            <div class="field"><label class="field-label" for="pEmail">Email</label><input id="pEmail" type="email" value="ahmed@gulfsystems.om"></div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field"><label class="field-label" for="pPhone">Phone</label><input id="pPhone" type="tel" value="+968 9123 4567"></div>
+                            <div class="field"><label class="field-label" for="pTz">Timezone</label><select id="pTz"><option selected>Asia/Muscat (GMT+4)</option><option>Asia/Dubai (GMT+4)</option><option>UTC</option></select></div>
+                        </div>
+                        <div class="field"><label class="field-label" for="pBio">Bio</label><textarea id="pBio">Procurement manager overseeing IT and facilities tenders.</textarea></div>
+                    </div>
+                </div>
+                <div class="form-actions"><a class="btn btn-secondary" href="/Settings">Cancel</a><button class="btn btn-primary" type="submit">Save changes</button></div>
+            </form>
+        </div>
+
+        <div data-tab-panel="settings" data-tab-value="company" hidden>
+            <h2>Company</h2><p class="desc">Shown on your public company profile and tender requests.</p>
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="section" value="company" />
+                <div class="field-stack">
+                    <div class="field-row">
+                        <div class="field"><label class="field-label" for="scTitle">Company name</label><input id="scTitle" type="text" value="Gulf Systems Integration LLC"></div>
+                        <div class="field"><label class="field-label" for="scWebsite">Website</label><input id="scWebsite" type="url" value="https://gulfsystems.om"></div>
+                    </div>
+                    <div class="field"><label class="field-label" for="scAddress">Address</label><input id="scAddress" type="text" value="Al Khuwair, Way 3115, Muscat"></div>
+                    <div class="field"><label class="field-label">Sectors</label><div class="co-tags"><span class="tag tag-blue">Technology</span><span class="tag tag-blue">Networking</span><span class="tag tag-blue">Cloud</span><span class="tag tag-neutral" style="cursor:pointer">+ Add sector</span></div></div>
+                    <div class="field"><label class="field-label" for="scBio">Company bio</label><textarea id="scBio">Gulf Systems Integration LLC delivers enterprise networking, cloud and systems integration projects for government and private-sector clients across Oman.</textarea></div>
+                </div>
+                <div class="form-actions"><a class="btn btn-secondary" href="/Settings">Cancel</a><button class="btn btn-primary" type="submit">Save changes</button></div>
+            </form>
+        </div>
+
+        <div data-tab-panel="settings" data-tab-value="notifications" hidden>
+            <h2>Notifications</h2><p class="desc">Choose what Munaqasat should email and notify you about.</p>
+            <div class="notif-row"><div><strong>New matching tenders</strong><span>A tender is published that matches your sectors</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>Deadline reminders</strong><span>Document sale and bid submission closing soon</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>Request status updates</strong><span>A request you submitted is accepted or rejected</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>New messages</strong><span>Someone messages you about a tender</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>Product updates</strong><span>Occasional news about new features</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
+        </div>
+
+        <div data-tab-panel="settings" data-tab-value="language" hidden>
+            <h2>Language &amp; region</h2><p class="desc">Tender pages, forms and notifications follow this language, including right-to-left layout for Arabic.</p>
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="section" value="language" />
+                <div class="field-stack">
+                    <div class="lang-card is-active" onclick="pickLangCard(this)"><span class="flag">EN</span><div><strong>English</strong><div style="font-size:12px;color:var(--ink-soft)">Left-to-right</div></div></div>
+                    <div class="lang-card" onclick="pickLangCard(this)"><span class="flag">ع</span><div><strong>العربية (Arabic)</strong><div style="font-size:12px;color:var(--ink-soft)">Right-to-left</div></div></div>
+                    <div class="field" style="max-width:320px"><label class="field-label" for="setTz">Timezone</label><select id="setTz"><option selected>Asia/Muscat (GMT+4)</option><option>UTC</option></select></div>
+                </div>
+                <div class="form-actions"><button class="btn btn-primary" type="submit">Save changes</button></div>
+            </form>
+        </div>
+
+        <div data-tab-panel="settings" data-tab-value="billing" hidden>
+            <h2>Billing &amp; plan</h2><p class="desc">Manage your subscription and payment details.</p>
+            <div class="plan-current">
+                <div><span class="badge badge-popular" style="margin-bottom:8px">Current plan</span><h3 style="font-size:16px">Professional &mdash; OMR 29/mo</h3><p style="font-size:12.5px;color:var(--ink-soft)">Renews on 15 October 2026</p></div>
+                <button type="button" class="btn btn-secondary btn-sm">Manage payment method</button>
+            </div>
+            <div class="tier-grid">
+                @foreach (var tier in Model.Tiers)
+                {
+                    <partial name="_TierCard" model="tier" />
+                }
+            </div>
+        </div>
+
+        <div data-tab-panel="settings" data-tab-value="security" hidden>
+            <h2>Security</h2><p class="desc">Keep your account protected.</p>
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="section" value="security" />
+                <div class="form-section">
+                    <div class="field-row">
+                        <div class="field"><label class="field-label" for="secPass1">New password</label><input id="secPass1" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+                        <div class="field"><label class="field-label" for="secPass2">Confirm new password</label><input id="secPass2" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+                    </div>
+                </div>
+                <div class="notif-row"><div><strong>Two-factor authentication</strong><span>Require a code in addition to your password</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
+                <div class="form-actions"><button class="btn btn-primary" type="submit">Update security</button></div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+@using Munaqasat.Web.Models
+@model Tender
+@{
+    double r = 26;
+    double c = 2 * Math.PI * r;
+    double off = c * (1 - Model.Score / 100.0);
+    var ci = System.Globalization.CultureInfo.InvariantCulture;
+}
+<article class="tcard">
+    <div class="tcard-icon"><svg class="icon"><use href="#@Model.Icon"></use></svg></div>
+    <div class="tcard-body">
+        <div class="tcard-head">
+            <h3><a href="/Tenders/Details/@Model.Id" style="color:inherit">@Model.Title</a></h3>
+            @if (Model.IsNew)
+            {
+                <span class="badge badge-new">New</span>
+            }
+        </div>
+        <div class="tcard-entity">@Model.Entity &middot; <span class="mono">@Model.TenderNo</span></div>
+        <div class="tcard-tags">
+            <span class="tag @Model.CategoryTagClass">@Model.CategoryLabel</span>
+            <span class="tag tag-green">@Model.BudgetLabel</span>
+            <span class="tcard-due"><svg class="icon" style="width:14px;height:14px"><use href="#i-clock"></use></svg> Due @Model.Closing.ToString("d MMM yyyy")</span>
+        </div>
+        <div class="tcard-actions">
+            <a class="btn btn-primary btn-sm" href="/Tenders/Details/@Model.Id">View details</a>
+            <button type="button" class="btn btn-ghost btn-sm" data-saved="false" onclick="toggleSave(event, this)">
+                <svg class="icon" style="width:14px;height:14px"><use href="#i-bookmark"></use></svg>
+                <span class="save-label">Save</span>
+            </button>
+        </div>
+    </div>
+    <div class="tcard-score">
+        <div class="ring ring--@Model.ScoreTier">
+            <svg viewBox="0 0 64 64">
+                <circle class="ring-track" cx="32" cy="32" r="@r.ToString(ci)"></circle>
+                <circle class="ring-val" cx="32" cy="32" r="@r.ToString(ci)" stroke-dasharray="@c.ToString("F2", ci)" stroke-dashoffset="@off.ToString("F2", ci)" stroke-linecap="round"></circle>
+            </svg>
+            <span class="ring-num">@Model.Score</span>
+        </div>
+        <span class="tcard-score-label">Match</span>
+    </div>
+</article>

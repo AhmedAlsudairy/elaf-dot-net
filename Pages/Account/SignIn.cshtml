@@ -1,0 +1,28 @@
+@page
+@model SignInModel
+@{
+    ViewData["Title"] = "Sign in";
+    ViewData["AppShell"] = false;
+}
+<div class="auth-shell">
+    <div class="auth-brand-panel">
+        <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
+        <div class="auth-quote">&ldquo;We cut our tender research time from two days to under an hour.&rdquo;<small>&mdash; Procurement lead, Gulf Systems Integration LLC</small></div>
+        <div class="auth-trust"><div><strong>1,240</strong><span>Open tenders</span></div><div><strong>3,800</strong><span>Companies</span></div><div><strong>4.7/5</strong><span>Avg. rating</span></div></div>
+    </div>
+    <div class="auth-form-panel">
+        <div class="auth-form-box">
+            <h1>Welcome back</h1>
+            <p class="sub">Sign in to review tenders, requests and messages.</p>
+            <form class="field-stack" method="post">
+                <div class="field"><label class="field-label" for="siEmail">Email</label><input id="siEmail" name="email" type="email" placeholder="you@company.om" required></div>
+                <div class="field"><label class="field-label" for="siPass">Password</label><input id="siPass" name="password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required></div>
+                <div class="row-between"><label class="checkbox-row"><input type="checkbox" checked> Keep me signed in</label><a href="#" style="font-size:12.5px;font-weight:600;color:var(--accent)">Forgot password?</a></div>
+                <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+            </form>
+            <div class="auth-divider">or continue with</div>
+            <a class="btn btn-secondary btn-block" href="/Tenders"><svg class="icon" style="width:15px;height:15px"><use href="#i-shield"></use></svg> Verified national ID</a>
+            <p class="auth-switch">New to Munaqasat? <a href="/Account/SignUp">Create an account</a></p>
+        </div>
+    </div>
+</div>

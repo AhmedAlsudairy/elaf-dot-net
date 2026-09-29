@@ -1,0 +1,93 @@
+@page "{id}"
+@model ProfileModel
+@{
+    ViewData["Title"] = Model.Company.Name;
+    ViewData["AppShell"] = true;
+    ViewData["ActiveNav"] = "company";
+}
+
+<div class="co-header">
+    <div class="co-logo">@Model.Company.Initials</div>
+    <div style="flex:1;min-width:220px">
+        <h1>@Model.Company.Name</h1>
+        <p class="detail-meta">@Model.Company.Address &middot; @Model.Company.Website</p>
+        <div class="co-tags">
+            @foreach (var s in Model.Company.Sectors)
+            {
+                <span class="tag tag-blue">@s</span>
+            }
+        </div>
+    </div>
+    <div class="co-summary">
+        <div class="co-overall"><strong>@Model.Company.Overall.ToString("0.0")</strong><span>@Model.Company.RatingCount ratings</span></div>
+        <div class="co-bars">
+            @foreach (var kv in Model.Company.Bars)
+            {
+                <div class="co-bar-row">
+                    <span class="label">@kv.Key</span>
+                    <div class="bar-track"><div class="bar-fill" style="width:@((kv.Value/5*100).ToString("0"))%"></div></div>
+                    <span class="num">@kv.Value.ToString("0.0")</span>
+                </div>
+            }
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" onclick="showToast('Opened conversation with @Model.Company.Name')"><svg class="icon" style="width:15px;height:15px"><use href="#i-message"></use></svg> Message</button>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab is-active" data-tab-group="company" data-tab-value="about">About</div>
+    <div class="tab" data-tab-group="company" data-tab-value="tenders">Active tenders</div>
+    <div class="tab" data-tab-group="company" data-tab-value="reviews">Reviews</div>
+</div>
+
+<div data-tab-panel="company" data-tab-value="about">
+    <div class="card" style="padding:22px 24px;margin-bottom:18px">
+        <h3 style="font-size:14px;margin-bottom:10px">About the company</h3>
+        <p class="prose">@Model.Company.Bio</p>
+    </div>
+
+    @{ var firstTab = Model.Company.CustomSections.FirstOrDefault(); }
+    <div class="cs-tabs">
+        @foreach (var s in Model.Company.CustomSections)
+        {
+            <button type="button" class="cs-tab-btn @(s == firstTab ? "is-active" : "")" data-tab-group="co-section" data-tab-value="@s.Tab">@s.Tab</button>
+        }
+    </div>
+    @foreach (var s in Model.Company.CustomSections)
+    {
+        <div class="card" style="padding:22px 24px" data-tab-panel="co-section" data-tab-value="@s.Tab" hidden="@(s == firstTab ? null : "hidden")">
+            <h3 style="font-size:14px;margin-bottom:10px">@s.Title</h3>
+            <p class="prose">@s.Description</p>
+        </div>
+    }
+</div>
+
+<div data-tab-panel="company" data-tab-value="tenders" hidden>
+    <div class="tender-grid">
+        @foreach (var t in Model.SampleTenders)
+        {
+            <partial name="_TenderCard" model="t" />
+        }
+    </div>
+</div>
+
+<div data-tab-panel="company" data-tab-value="reviews" hidden>
+    <div class="card" style="padding:22px 24px">
+        @foreach (var r in Model.Company.Reviews)
+        {
+            <div class="review-item">
+                <div class="avatar" style="width:36px;height:36px">@(r.Anonymous ? "?" : r.By.Substring(0, Math.Min(2, r.By.Length)).ToUpper())</div>
+                <div class="review-body">
+                    <div class="review-head"><strong>@r.By</strong><span>@r.Date.ToString("d MMM yyyy")</span></div>
+                    <div class="review-scores">
+                        <span>Quality <b>@r.Quality</b></span>
+                        <span>Communication <b>@r.Communication</b></span>
+                        <span>Experience <b>@r.Experience</b></span>
+                        <span>Deadline <b>@r.Deadline</b></span>
+                    </div>
+                    <p class="review-comment">@r.Comment</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

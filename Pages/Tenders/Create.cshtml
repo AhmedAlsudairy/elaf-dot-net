@@ -1,0 +1,90 @@
+@page
+@model CreateModel
+@{
+    ViewData["Title"] = "Post a tender";
+    ViewData["AppShell"] = true;
+    ViewData["ActiveNav"] = "tender-form";
+}
+
+<div class="page-head"><div><h1>Post a tender</h1><p class="sub">Fields marked with the language tabs support both English and Arabic.</p></div></div>
+
+<form method="post">
+    <div class="form-card">
+        <h2>Basic information</h2><p class="desc">What the tender is, and who is issuing it.</p>
+        <div class="lang-tabs">
+            <button type="button" class="cs-tab-btn is-active" id="tf-lang-en" onclick="setFormLang('en')">English</button>
+            <button type="button" class="cs-tab-btn" id="tf-lang-ar" onclick="setFormLang('ar')">العربية</button>
+        </div>
+        <div class="field-stack">
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfEntity">Issuing entity</label><input id="tfEntity" name="Entity" type="text" placeholder="Ministry of Transport, Communications and IT"></div>
+                <div class="field"><label class="field-label" for="tfTitle">Tender title</label><input id="tfTitle" name="Title" type="text" placeholder="Supply and installation of network equipment"></div>
+            </div>
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfNo">Tender no.</label><input id="tfNo" name="TenderNo" class="mono" type="text" placeholder="112/2026/MTCIT/DGIT-14"></div>
+                <div class="field"><label class="field-label" for="tfExtId">External tender ID</label><input id="tfExtId" name="ExtId" class="mono" type="text" placeholder="98629"></div>
+            </div>
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfCategory">Procurement category</label><select id="tfCategory" name="Category"><option>Supply</option><option>Services</option><option>Works</option></select></div>
+                <div class="field"><label class="field-label" for="tfType">Tender type</label><select id="tfType" name="TenderType"><option>Open &mdash; local</option><option>Open &mdash; international</option><option>Limited</option></select></div>
+            </div>
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfGov">Governorate</label><select id="tfGov" name="Governorate"><option>Muscat</option><option>Al Wusta</option><option>North Sharqiyah</option><option>Al Batinah North</option></select></div>
+                <div class="field"><label class="field-label" for="tfWilayat">Wilayat</label><input id="tfWilayat" name="Wilayat" type="text" placeholder="Bawshar"></div>
+            </div>
+            <label class="checkbox-row"><input type="checkbox" name="AlternateBids"> Alternate bids allowed</label>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <h2>Key dates</h2><p class="desc">All times are Asia/Muscat (GMT+4).</p>
+        <div class="field-stack">
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfPub">Published date</label><input id="tfPub" name="Published" type="date"></div>
+                <div class="field"><label class="field-label" for="tfSaleStart">Document sale &mdash; start</label><input id="tfSaleStart" name="SaleStart" type="datetime-local"></div>
+                <div class="field"><label class="field-label" for="tfSaleEnd">Document sale &mdash; end</label><input id="tfSaleEnd" name="SaleEnd" type="datetime-local"></div>
+            </div>
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfClarStart">Prebid clarification &mdash; start</label><input id="tfClarStart" name="ClarStart" type="datetime-local"></div>
+                <div class="field"><label class="field-label" for="tfClarEnd">Prebid clarification &mdash; end</label><input id="tfClarEnd" name="ClarEnd" type="datetime-local"></div>
+            </div>
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfClosing">Bid submission closing</label><input id="tfClosing" name="Closing" type="datetime-local"></div>
+                <div class="field"><label class="field-label" for="tfOpening">Priced bid opening</label><input id="tfOpening" name="Opening" type="datetime-local"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <h2>Financial terms</h2><p class="desc">Document fee and bid bond requirements.</p>
+        <div class="field-stack">
+            <div class="field-row">
+                <div class="field"><label class="field-label" for="tfFee">Document fee (OMR)</label><input id="tfFee" name="DocFee" type="number" step="0.001" placeholder="25.000"></div>
+                <div class="field"><label class="field-label" for="tfFeeMode">Payment mode</label><select id="tfFeeMode" name="FeeMode"><option>Online payment</option><option>Bank transfer</option><option>Cash at office</option></select></div>
+                <div class="field"><label class="field-label" for="tfBond">Bid bond (%)</label><input id="tfBond" name="Bond" type="number" step="0.1" placeholder="2.0"></div>
+            </div>
+            <label class="checkbox-row"><input type="checkbox" name="EBond"> e-Bond accepted</label>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <h2>Description &amp; requirements</h2><p class="desc">A short note plus any additional requirements bidders should see.</p>
+        <div class="field" style="margin-bottom:20px"><label class="field-label" for="tfDesc">Description</label><textarea id="tfDesc" name="Description" placeholder="Scope of work, delivery expectations, site conditions&hellip;"></textarea></div>
+        <div id="tf-customfields">
+            <div class="cf-row">
+                <div class="field"><label class="field-label">Title</label><input type="text" name="CustomFields[0].Title" placeholder="e.g. Warranty period"></div>
+                <div class="field"><label class="field-label">Description</label><input type="text" name="CustomFields[0].Description" placeholder="e.g. Minimum 3 years onsite warranty"></div>
+                <button type="button" class="icon-btn btn-icon remove-row-btn" onclick="this.closest('.cf-row').remove()"><svg class="icon"><use href="#i-trash"></use></svg></button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomFieldRow()"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"></use></svg> Add requirement</button>
+    </div>
+
+    <div class="sticky-formbar">
+        <a class="btn btn-ghost" href="/Tenders">Cancel</a>
+        <div style="display:flex;gap:10px">
+            <button type="submit" asp-page-handler="Draft" class="btn btn-secondary">Save as draft</button>
+            <button type="submit" asp-page-handler="Publish" class="btn btn-primary">Publish tender</button>
+        </div>
+    </div>
+</form>

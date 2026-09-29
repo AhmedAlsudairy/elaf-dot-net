@@ -1,0 +1,59 @@
+@page
+@model SignUpModel
+@{
+    ViewData["Title"] = "Create account";
+    ViewData["AppShell"] = false;
+}
+<div class="auth-shell">
+    <div class="auth-brand-panel">
+        <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
+        <div class="auth-quote">&ldquo;Setting up our company profile took ten minutes &mdash; our first accepted bid came the same week.&rdquo;<small>&mdash; Founder, Al Nahda Consulting Group</small></div>
+        <div class="auth-trust"><div><strong>2 min</strong><span>Avg. setup</span></div><div><strong>Free</strong><span>To get started</span></div><div><strong>EN / AR</strong><span>Full support</span></div></div>
+    </div>
+    <div class="auth-form-panel">
+        <div class="auth-form-box">
+            <div class="step-indicator">
+                <span class="step-dot is-active" id="su-dot-1">1</span><span class="step-line"></span><span class="step-dot" id="su-dot-2">2</span>
+                <span style="margin-left:8px;text-transform:none;font-weight:600;color:var(--ink-soft)" id="su-step-label">Choose your account type</span>
+            </div>
+
+            <form method="post">
+                <input type="hidden" id="accountType" name="accountType" value="" />
+
+                <div id="su-step1">
+                    <h1>Create your account</h1>
+                    <p class="sub">Tell us how you'll use Munaqasat &mdash; this sets up the right tools for you.</p>
+                    <div class="role-pick-grid">
+                        <div class="role-pick" id="pick-client" onclick="selectAccountType('client')">
+                            <span class="ico"><svg class="icon"><use href="#i-building"></use></svg></span>
+                            <div><h4>I represent an organization</h4><p>Post tenders and review requests from contractors and suppliers.</p></div>
+                        </div>
+                        <div class="role-pick" id="pick-contractor" onclick="selectAccountType('contractor')">
+                            <span class="ico"><svg class="icon"><use href="#i-briefcase"></use></svg></span>
+                            <div><h4>I provide services or supplies</h4><p>Browse open tenders and submit competitive bids.</p></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-block" style="margin-top:20px" id="su-continue" disabled onclick="goSignupStep2()">Continue</button>
+                </div>
+
+                <div id="su-step2" hidden class="field-stack">
+                    <div class="field-row">
+                        <div class="field"><label class="field-label" for="suName">Full name</label><input id="suName" name="fullName" type="text" placeholder="Ahmed Al Rawahi" required></div>
+                        <div class="field"><label class="field-label" for="suOrg" id="suOrgLabel">Company name</label><input id="suOrg" name="orgName" type="text" placeholder="Gulf Systems Integration LLC" required></div>
+                    </div>
+                    <div class="field"><label class="field-label" for="suEmail">Work email</label><input id="suEmail" name="email" type="email" placeholder="you@company.om" required></div>
+                    <div class="field-row">
+                        <div class="field"><label class="field-label" for="suPhone">Phone</label><input id="suPhone" name="phone" type="tel" placeholder="+968 9xxx xxxx"></div>
+                        <div class="field"><label class="field-label" for="suPass">Password</label><input id="suPass" name="password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required></div>
+                    </div>
+                    <label class="checkbox-row"><input type="checkbox" required> I agree to the Terms of Service and Privacy Policy</label>
+                    <div style="display:flex;gap:10px">
+                        <button type="button" class="btn btn-secondary" onclick="goSignupStep1()">Back</button>
+                        <button class="btn btn-primary btn-block" type="submit">Create account</button>
+                    </div>
+                </div>
+            </form>
+            <p class="auth-switch">Already have an account? <a href="/Account/SignIn">Sign in</a></p>
+        </div>
+    </div>
+</div>

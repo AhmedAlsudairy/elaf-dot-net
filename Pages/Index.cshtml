@@ -31,18 +31,6 @@
         </div>
     </div>
 
-    <div class="entity-strip">
-        <span class="label">Currently listing tenders from</span>
-        @for (int i = 0; i < Model.IssuingEntities.Count; i++)
-        {
-            <span class="name">@Model.IssuingEntities[i]</span>
-            if (i < Model.IssuingEntities.Count - 1)
-            {
-                <span style="color:var(--border-strong)">&middot;</span>
-            }
-        }
-    </div>
-
     <div class="section section-band" id="how">
         <div class="section-head">
             <span class="eyebrow">How it works</span>

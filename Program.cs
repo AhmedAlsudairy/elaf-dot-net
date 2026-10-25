@@ -1,9 +1,22 @@
+using Munaqasat.Web.Infrastructure;
+using Munaqasat.Web.Infrastructure.Persistence.Seed;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
+builder.Services.AddPersistence(builder.Configuration, builder.Environment);
+builder.Services.AddApplicationIdentity(builder.Environment);
+builder.Services.AddApplicationServices();
+
 var app = builder.Build();
+
+if (app.Configuration.GetValue("Seed:RunOnStartup", app.Environment.IsDevelopment()))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -18,6 +31,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();

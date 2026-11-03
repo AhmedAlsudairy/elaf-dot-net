@@ -1,5 +1,5 @@
 // ============================================================
-//  Neon / Postgres schema - tender platform
+//  PostgreSQL schema - tender platform
 //  Source of truth for the EF Core model in Domain/ + Infrastructure/Persistence/.
 //  Paste into https://dbdiagram.io/d
 //
@@ -14,8 +14,7 @@
 //   - indexes on every language_code FK (the convention "every FK is indexed")
 //
 //  Auth: ASP.NET Core Identity keeps its own identity_* tables (not shown).
-//  user_profiles.clerk_user_id holds the Identity user id, so moving to Clerk
-//  later only changes what is stored in that column.
+//  user_profiles.identity_user_id links each profile to its Identity user.
 //
 //  Conventions:
 //   - snake_case everywhere, timestamptz for every point in time
@@ -23,7 +22,7 @@
 //   - every foreign key column is indexed (Postgres does not do it for you)
 //   - translations: one row per (record, language), unique on that pair
 //   - fallback rule in the app: requested language, record default, then 'en'
-//   - DB must be UTF8 (Neon default), Arabic is stored as-is, never reversed
+//   - DB must be UTF8, Arabic is stored as-is, never reversed
 // ============================================================
 
 Enum text_direction {
@@ -246,7 +245,7 @@ Table user_profiles {
   profile_image            text
   role                     text [note: 'client, contractor, individual, admin']
   company_that_worked_with text
-  clerk_user_id            text [not null, unique, note: 'auth provider user id (Identity today)']
+  identity_user_id         text [not null, unique, note: 'identity_users.id']
   company_id               text
   preferred_language       text [not null, default: 'en']
   timezone                 text [not null, default: 'Asia/Muscat']

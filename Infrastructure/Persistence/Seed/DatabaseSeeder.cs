@@ -100,14 +100,14 @@ public sealed class DatabaseSeeder
         if (!await _users.IsInRoleAsync(authUser, Roles.Administrator))
             await _users.AddToRoleAsync(authUser, Roles.Administrator);
 
-        if (!await _db.UserProfiles.AnyAsync(p => p.ClerkUserId == authUser.Id))
+        if (!await _db.UserProfiles.AnyAsync(p => p.IdentityUserId == authUser.Id))
         {
             _db.UserProfiles.Add(new UserProfile
             {
                 Name = _config["Seed:AdministratorName"] ?? "Platform administrator",
                 Email = email,
                 Role = "admin",
-                ClerkUserId = authUser.Id
+                IdentityUserId = authUser.Id
             });
             await _db.SaveChangesAsync();
         }

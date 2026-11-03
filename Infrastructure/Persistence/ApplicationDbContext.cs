@@ -9,7 +9,7 @@ namespace Munaqasat.Web.Infrastructure.Persistence;
 
 /// <summary>
 /// Tables follow the tender platform ERD (snake_case, text ids, one translation row per record and language).
-/// ASP.NET Core Identity keeps its own tables for passwords and roles; <c>user_profiles.clerk_user_id</c>
+/// ASP.NET Core Identity keeps its own tables for passwords and roles; <c>user_profiles.identity_user_id</c>
 /// links a profile to its Identity user.
 /// </summary>
 public class ApplicationDbContext : IdentityDbContext<IdentityUser>

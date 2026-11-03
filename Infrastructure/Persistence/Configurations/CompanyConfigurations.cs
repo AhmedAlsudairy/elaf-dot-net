@@ -71,7 +71,7 @@ public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
     public void Configure(EntityTypeBuilder<UserProfile> b)
     {
         b.HasIndex(e => e.Email).IsUnique();
-        b.HasIndex(e => e.ClerkUserId).IsUnique();
+        b.HasIndex(e => e.IdentityUserId).IsUnique();
         b.Property(e => e.PreferredLanguage).HasDefaultValue("en");
         b.Property(e => e.Timezone).HasDefaultValue("Asia/Muscat");
         b.HasTimestamps();

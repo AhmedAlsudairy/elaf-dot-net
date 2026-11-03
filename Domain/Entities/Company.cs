@@ -87,10 +87,9 @@ public class UserProfile : IHasTimestamps
     public string? CompanyThatWorkedWith { get; set; }
 
     /// <summary>
-    /// The auth provider's user id. Named after the ERD (Clerk); today it holds the
-    /// ASP.NET Core Identity user id, so switching to Clerk later only changes what is stored here.
+    /// The ASP.NET Core Identity user id (identity_users.id) this profile belongs to.
     /// </summary>
-    public string ClerkUserId { get; set; } = "";
+    public string IdentityUserId { get; set; } = "";
 
     public string? CompanyId { get; set; }
     public Company? Company { get; set; }

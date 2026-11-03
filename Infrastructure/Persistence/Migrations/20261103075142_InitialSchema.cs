@@ -353,7 +353,7 @@ namespace Munaqasat.Web.Infrastructure.Persistence.Migrations
                     profile_image = table.Column<string>(type: "text", nullable: true),
                     role = table.Column<string>(type: "text", nullable: true),
                     company_that_worked_with = table.Column<string>(type: "text", nullable: true),
-                    clerk_user_id = table.Column<string>(type: "text", nullable: false),
+                    identity_user_id = table.Column<string>(type: "text", nullable: false),
                     company_id = table.Column<string>(type: "text", nullable: true),
                     preferred_language = table.Column<string>(type: "text", nullable: false, defaultValue: "en"),
                     timezone = table.Column<string>(type: "text", nullable: false, defaultValue: "Asia/Muscat"),
@@ -1000,9 +1000,9 @@ namespace Munaqasat.Web.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_user_profiles_clerk_user_id",
+                name: "ix_user_profiles_identity_user_id",
                 table: "user_profiles",
-                column: "clerk_user_id",
+                column: "identity_user_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(

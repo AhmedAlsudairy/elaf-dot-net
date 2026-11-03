@@ -6,7 +6,7 @@ The pages read and write a PostgreSQL database through EF Core, with a schema th
 
 ## Run locally
 
-Requires .NET 8 and PostgreSQL 14+ (local, Docker, or Neon).
+Requires .NET 8 and PostgreSQL 14+.
 
 No credentials live in this repository. The connection string and the administrator seed come from [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
 
@@ -19,8 +19,6 @@ dotnet user-secrets set "Seed:AdministratorPassword" "<a password of your own>"
 
 dotnet run
 ```
-
-For Neon, use its connection string in the same key, e.g. `Host=<project>.neon.tech;Database=neondb;Username=<user>;Password=<password>;SSL Mode=Require`.
 
 In Development, startup applies migrations and seeds languages (en, ar), roles and the administrator. `Seed:SampleData` (on in `appsettings.Development.json`) also loads the sample tenders, companies, requests and ratings the UI was designed with. Re-running is safe: every seed step is idempotent.
 
@@ -38,7 +36,7 @@ The schema follows the ERD in [`docs/schema.dbml`](docs/schema.dbml) (paste it i
 
 Additions to the ERD that the frontend needs are marked "added" in the DBML: `tenders.budget_min/budget_max/status` and `companies.verification_status`.
 
-Auth uses ASP.NET Core Identity (`identity_*` tables). `user_profiles.clerk_user_id` stores the Identity user id, so a later move to Clerk only changes what goes in that column.
+Auth uses ASP.NET Core Identity (`identity_*` tables), hosted in the app itself. `user_profiles.identity_user_id` links a profile to its Identity user.
 
 Add a migration after changing an entity:
 

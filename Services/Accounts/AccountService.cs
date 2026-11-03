@@ -113,7 +113,7 @@ public sealed class AccountService : IAccountService
             Email = email,
             PhoneNumber = input.Phone,
             Role = roleKey,
-            ClerkUserId = authUser.Id,
+            IdentityUserId = authUser.Id,
             Company = company,
             PreferredLanguage = _language.Code
         });
@@ -162,7 +162,7 @@ public sealed class AccountService : IAccountService
             if (await _db.UserProfiles.AnyAsync(p => p.Email == email && p.Id != profile.Id))
                 return OperationResult.Failure("That email is already used by another account");
 
-            var authUser = await _users.FindByIdAsync(profile.ClerkUserId);
+            var authUser = await _users.FindByIdAsync(profile.IdentityUserId);
             if (authUser is not null)
             {
                 await _users.SetEmailAsync(authUser, email);
@@ -176,7 +176,7 @@ public sealed class AccountService : IAccountService
         profile.Timezone = string.IsNullOrWhiteSpace(input.Timezone) ? profile.Timezone : input.Timezone;
         profile.Bio = input.Bio;
         await _db.SaveChangesAsync();
-        await RefreshSignInAsync(profile.ClerkUserId);
+        await RefreshSignInAsync(profile.IdentityUserId);
         return OperationResult.Success();
     }
 
@@ -190,7 +190,7 @@ public sealed class AccountService : IAccountService
         profile.PreferredLanguage = languageCode;
         if (!string.IsNullOrWhiteSpace(timezone)) profile.Timezone = timezone;
         await _db.SaveChangesAsync();
-        await RefreshSignInAsync(profile.ClerkUserId);
+        await RefreshSignInAsync(profile.IdentityUserId);
         return OperationResult.Success();
     }
 
@@ -240,7 +240,7 @@ public sealed class AccountService : IAccountService
     private IQueryable<UserProfile> CurrentProfileQuery()
     {
         var authUserId = _current.AuthUserId ?? "";
-        return _db.UserProfiles.Where(p => p.ClerkUserId == authUserId);
+        return _db.UserProfiles.Where(p => p.IdentityUserId == authUserId);
     }
 
     private async Task RefreshSignInAsync(string authUserId)
@@ -264,7 +264,7 @@ public sealed class ProfileClaimsPrincipalFactory : UserClaimsPrincipalFactory<I
     protected override async Task<ClaimsIdentity> GenerateClaimsAsync(IdentityUser user)
     {
         var identity = await base.GenerateClaimsAsync(user);
-        var profile = await _db.UserProfiles.AsNoTracking().FirstOrDefaultAsync(p => p.ClerkUserId == user.Id);
+        var profile = await _db.UserProfiles.AsNoTracking().FirstOrDefaultAsync(p => p.IdentityUserId == user.Id);
         if (profile is null) return identity;
 
         identity.AddClaim(new Claim(HttpContextCurrentUser.ProfileIdClaim, profile.Id));

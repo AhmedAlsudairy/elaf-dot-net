@@ -7,7 +7,7 @@ public interface ICurrentUser
 {
     bool IsAuthenticated { get; }
 
-    /// <summary>Identity user id (stored in <c>user_profiles.clerk_user_id</c>).</summary>
+    /// <summary>Identity user id (stored in <c>user_profiles.identity_user_id</c>).</summary>
     string? AuthUserId { get; }
 
     /// <summary><c>user_profiles.id</c>.</summary>

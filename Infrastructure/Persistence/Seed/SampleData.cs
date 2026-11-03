@@ -240,7 +240,7 @@ internal static class SampleData
 
             db.UserProfiles.Add(new UserProfile
             {
-                Name = u.Name, Email = u.Email, Role = u.Role, CompanyId = u.Company, ClerkUserId = authUser.Id
+                Name = u.Name, Email = u.Email, Role = u.Role, CompanyId = u.Company, IdentityUserId = authUser.Id
             });
         }
 

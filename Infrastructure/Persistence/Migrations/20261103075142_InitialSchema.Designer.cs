@@ -1344,10 +1344,10 @@ namespace Munaqasat.Web.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("bio");
 
-                    b.Property<string>("ClerkUserId")
+                    b.Property<string>("IdentityUserId")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("clerk_user_id");
+                        .HasColumnName("identity_user_id");
 
                     b.Property<string>("CompanyId")
                         .HasColumnType("text")
@@ -1408,9 +1408,9 @@ namespace Munaqasat.Web.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_user_profiles");
 
-                    b.HasIndex("ClerkUserId")
+                    b.HasIndex("IdentityUserId")
                         .IsUnique()
-                        .HasDatabaseName("ix_user_profiles_clerk_user_id");
+                        .HasDatabaseName("ix_user_profiles_identity_user_id");
 
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_user_profiles_company_id");

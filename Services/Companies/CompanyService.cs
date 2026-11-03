@@ -3,216 +3,166 @@ using Munaqasat.Web.Domain;
 using Munaqasat.Web.Domain.Entities;
 using Munaqasat.Web.Infrastructure.Persistence;
 using Munaqasat.Web.Services.Common;
+using Munaqasat.Web.Services.Localization;
+using CompanyView = Munaqasat.Web.Models.Company;
+using CompanyRow = Munaqasat.Web.Models.CompanyRow;
+using CustomSectionView = Munaqasat.Web.Models.CustomSection;
+using ReviewView = Munaqasat.Web.Models.Review;
 
 namespace Munaqasat.Web.Services.Companies;
+
+public record CompanyInput(string Title, string? Website, string? Address, string? Bio, string? Sectors);
+
+public interface ICompanyService
+{
+    Task<CompanyView?> GetProfileAsync(string id);
+    Task<List<CompanyRow>> ListRowsAsync();
+    Task<OperationResult> UpdateCurrentAsync(CompanyInput input);
+}
 
 public sealed class CompanyService : ICompanyService
 {
     private readonly ApplicationDbContext _db;
-    private readonly IClock _clock;
-    private readonly ICurrentUser _currentUser;
+    private readonly ICurrentUser _current;
+    private readonly IRequestLanguage _language;
 
-    public CompanyService(ApplicationDbContext db, IClock clock, ICurrentUser currentUser)
+    public CompanyService(ApplicationDbContext db, ICurrentUser current, IRequestLanguage language)
     {
         _db = db;
-        _clock = clock;
-        _currentUser = currentUser;
+        _current = current;
+        _language = language;
     }
 
-    public Task<Company?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
-        ProfileQuery().FirstOrDefaultAsync(c => c.Slug == slug, cancellationToken);
-
-    public Task<Company?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        ProfileQuery().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
-
-    public async Task<OperationResult<Guid>> CreateAsync(
-        CompanyProfileInput input,
-        CancellationToken cancellationToken = default)
+    public async Task<CompanyView?> GetProfileAsync(string id)
     {
-        if (string.IsNullOrWhiteSpace(input.Name))
-            return OperationResult<Guid>.Failure("A company name is required.");
-
-        if (!string.IsNullOrWhiteSpace(input.CommercialRegistrationNumber))
-        {
-            var registration = input.CommercialRegistrationNumber.Trim();
-            var taken = await _db.Companies
-                .AnyAsync(c => c.CommercialRegistrationNumber == registration, cancellationToken);
-
-            if (taken)
-                return OperationResult<Guid>.Failure("A company with that commercial registration number already exists.");
-        }
-
-        var company = new Company
-        {
-            Slug = await ReserveSlugAsync(input.Name, excludingCompanyId: null, cancellationToken),
-            Initials = InitialsFrom(input.Name),
-            VerificationStatus = CompanyVerificationStatus.Pending
-        };
-
-        Apply(input, company);
-
-        _db.Companies.Add(company);
-        await ReplaceSectorsAsync(company, input.SectorIds, cancellationToken);
-        await _db.SaveChangesAsync(cancellationToken);
-
-        return OperationResult<Guid>.Success(company.Id);
-    }
-
-    public async Task<OperationResult> UpdateProfileAsync(
-        Guid id,
-        CompanyProfileInput input,
-        CancellationToken cancellationToken = default)
-    {
-        if (!_currentUser.IsAdministrator && _currentUser.CompanyId != id)
-            return OperationResult.Failure("You cannot edit this company profile.");
+        var lang = _language.Code;
 
         var company = await _db.Companies
-            .Include(c => c.Sectors)
-            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
-
-        if (company is null) return OperationResult.Failure("Company not found.");
-
-        if (string.IsNullOrWhiteSpace(input.Name))
-            return OperationResult.Failure("A company name is required.");
-
-        if (!string.IsNullOrWhiteSpace(input.CommercialRegistrationNumber))
-        {
-            var registration = input.CommercialRegistrationNumber.Trim();
-            var taken = await _db.Companies
-                .AnyAsync(c => c.Id != id && c.CommercialRegistrationNumber == registration, cancellationToken);
-
-            if (taken)
-                return OperationResult.Failure("A company with that commercial registration number already exists.");
-        }
-
-        if (!string.Equals(company.Name, input.Name.Trim(), StringComparison.Ordinal))
-        {
-            var candidate = Slug.From(input.Name);
-            if (candidate.Length > 0 && !company.Slug.StartsWith(candidate, StringComparison.Ordinal))
-                company.Slug = await ReserveSlugAsync(input.Name, id, cancellationToken);
-        }
-
-        Apply(input, company);
-        await ReplaceSectorsAsync(company, input.SectorIds, cancellationToken);
-
-        await _db.SaveChangesAsync(cancellationToken);
-        return OperationResult.Success();
-    }
-
-    public async Task<OperationResult> SetVerificationStatusAsync(
-        Guid id,
-        CompanyVerificationStatus status,
-        CancellationToken cancellationToken = default)
-    {
-        if (!_currentUser.IsAdministrator)
-            return OperationResult.Failure("Only an administrator can change verification status.");
-
-        var company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
-        if (company is null) return OperationResult.Failure("Company not found.");
-
-        company.VerificationStatus = status;
-        company.VerifiedAt = status == CompanyVerificationStatus.Verified ? _clock.UtcNow : null;
-
-        await _db.SaveChangesAsync(cancellationToken);
-        return OperationResult.Success();
-    }
-
-    public async Task RecalculateRatingAsync(Guid companyId, CancellationToken cancellationToken = default)
-    {
-        var company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == companyId, cancellationToken);
-        if (company is null) return;
-
-        var rollup = await _db.Reviews
-            .Where(r => r.CompanyId == companyId && r.IsPublished)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Count = g.Count(),
-                Average = g.Average(r =>
-                    (r.QualityRating + r.CommunicationRating + r.ExperienceRating + r.DeadlineRating) / 4d)
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        company.RatingCount = rollup?.Count ?? 0;
-        company.RatingAverage = rollup is null ? 0 : Math.Round(rollup.Average, 2);
-
-        await _db.SaveChangesAsync(cancellationToken);
-    }
-
-    private IQueryable<Company> ProfileQuery() =>
-        _db.Companies
             .AsNoTracking()
-            .Include(c => c.Governorate)
-            .Include(c => c.Sectors).ThenInclude(cs => cs.Sector)
-            .Include(c => c.ProfileSections.OrderBy(s => s.SortOrder))
-            .Include(c => c.Reviews.Where(r => r.IsPublished).OrderByDescending(r => r.CreatedAt))
-                .ThenInclude(r => r.AuthorUser);
+            .AsSplitQuery()
+            .Include(c => c.Translations)
+            .Include(c => c.CustomSections.OrderBy(s => s.SortOrder)).ThenInclude(s => s.Translations)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        if (company is null) return null;
 
-    private static void Apply(CompanyProfileInput input, Company company)
-    {
-        company.Name = input.Name.Trim();
-        company.NameAr = input.NameAr.Trim();
-        company.CommercialRegistrationNumber = string.IsNullOrWhiteSpace(input.CommercialRegistrationNumber)
-            ? null
-            : input.CommercialRegistrationNumber.Trim();
-        company.Address = input.Address.Trim();
-        company.Website = string.IsNullOrWhiteSpace(input.Website) ? null : input.Website.Trim();
-        company.Bio = input.Bio.Trim();
-        company.BioAr = input.BioAr.Trim();
-        company.GovernorateId = input.GovernorateId;
-    }
+        var ratings = await _db.CompanyRatings
+            .AsNoTracking()
+            .Where(r => r.RatedCompanyId == id)
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new
+            {
+                r.Quality, r.Communication, r.Experience, r.Deadline, r.Comment, r.Anonymous, r.CreatedAt,
+                RaterTranslations = r.RatingCompany.Translations.ToList(),
+                RaterDefault = r.RatingCompany.DefaultLanguage
+            })
+            .ToListAsync();
 
-    private async Task ReplaceSectorsAsync(
-        Company company,
-        IReadOnlyCollection<Guid> sectorIds,
-        CancellationToken cancellationToken)
-    {
-        var wanted = sectorIds.Distinct().ToHashSet();
+        var tr = Translations.Pick(company.Translations, lang, company.DefaultLanguage);
+        var name = tr?.CompanyTitle ?? company.CompanyEmail;
 
-        var valid = await _db.Sectors
-            .Where(s => wanted.Contains(s.Id))
-            .Select(s => s.Id)
-            .ToListAsync(cancellationToken);
-
-        company.Sectors.Clear();
-
-        foreach (var sectorId in valid)
-            company.Sectors.Add(new CompanySector { CompanyId = company.Id, SectorId = sectorId });
-    }
-
-    private async Task<string> ReserveSlugAsync(
-        string name,
-        Guid? excludingCompanyId,
-        CancellationToken cancellationToken)
-    {
-        var baseSlug = Slug.From(name);
-        if (baseSlug.Length == 0) baseSlug = "company";
-
-        var taken = await _db.Companies
-            .Where(c => c.Slug.StartsWith(baseSlug) && c.Id != excludingCompanyId)
-            .Select(c => c.Slug)
-            .ToListAsync(cancellationToken);
-
-        if (!taken.Contains(baseSlug)) return baseSlug;
-
-        for (var suffix = 2; suffix < 1000; suffix++)
+        return new CompanyView
         {
-            var candidate = $"{baseSlug}-{suffix}";
-            if (!taken.Contains(candidate)) return candidate;
-        }
-
-        return $"{baseSlug}-{Guid.NewGuid():N}"[..40];
-    }
-
-    private static string InitialsFrom(string name)
-    {
-        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        return words.Length switch
-        {
-            0 => "",
-            1 => words[0][..Math.Min(2, words[0].Length)].ToUpperInvariant(),
-            _ => $"{words[0][0]}{words[1][0]}".ToUpperInvariant()
+            Id = company.Id,
+            Name = name,
+            Initials = Initials(name),
+            Address = tr?.Address ?? "",
+            Website = DisplayWebsite(company.CompanyWebsite),
+            Sectors = company.Sectors ?? new List<string>(),
+            Overall = Math.Round(company.AvgOverallRating, 1),
+            RatingCount = company.NumberOfRatings,
+            Bars = new Dictionary<string, double>
+            {
+                ["Quality"] = Math.Round(company.AvgQuality, 1),
+                ["Communication"] = Math.Round(company.AvgCommunication, 1),
+                ["Experience"] = Math.Round(company.AvgExperience, 1),
+                ["Deadlines"] = Math.Round(company.AvgDeadline, 1)
+            },
+            Bio = tr?.Bio ?? "",
+            CustomSections = company.CustomSections
+                .Select(s => Translations.Pick(s.Translations, lang, company.DefaultLanguage))
+                .Where(s => s is not null)
+                .Select(s => new CustomSectionView { Tab = s!.TabName, Title = s.Title, Description = s.Description })
+                .ToList(),
+            Reviews = ratings.Select(r => new ReviewView
+            {
+                By = r.Anonymous ? "Anonymous" : Translations.Pick(r.RaterTranslations, lang, r.RaterDefault)?.CompanyTitle ?? "Company",
+                Date = DateOnly.FromDateTime(r.CreatedAt.ToOffset(SystemClock.OmanOffset).DateTime),
+                Quality = r.Quality,
+                Communication = r.Communication,
+                Experience = r.Experience,
+                Deadline = r.Deadline,
+                Comment = r.Comment ?? "",
+                Anonymous = r.Anonymous
+            }).ToList()
         };
     }
+
+    public async Task<List<CompanyRow>> ListRowsAsync()
+    {
+        var lang = _language.Code;
+        var companies = await _db.Companies
+            .AsNoTracking()
+            .Include(c => c.Translations)
+            .OrderByDescending(c => c.AvgOverallRating)
+            .ToListAsync();
+
+        return companies.Select(c => new CompanyRow
+        {
+            Name = Translations.Pick(c.Translations, lang, c.DefaultLanguage)?.CompanyTitle ?? c.CompanyEmail,
+            Sectors = string.Join(", ", (c.Sectors ?? new List<string>()).Take(2)),
+            Rating = Math.Round(c.AvgOverallRating, 1),
+            Count = c.NumberOfRatings,
+            Status = c.VerificationStatus == VerificationStatuses.Verified ? "Verified" : "Pending review"
+        }).ToList();
+    }
+
+    public async Task<OperationResult> UpdateCurrentAsync(CompanyInput input)
+    {
+        if (_current.CompanyId is null) return OperationResult.Failure("Your account is not linked to a company");
+        if (string.IsNullOrWhiteSpace(input.Title)) return OperationResult.Failure("Company name is required");
+
+        var lang = _language.Code;
+        var company = await _db.Companies.Include(c => c.Translations).FirstOrDefaultAsync(c => c.Id == _current.CompanyId);
+        if (company is null) return OperationResult.Failure("Company not found");
+
+        company.CompanyWebsite = string.IsNullOrWhiteSpace(input.Website) ? null : input.Website.Trim();
+        if (input.Sectors is not null)
+        {
+            company.Sectors = input.Sectors
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        // Edits are saved in the language the user is working in.
+        var tr = company.Translations.FirstOrDefault(t => t.LanguageCode == lang);
+        if (tr is null)
+        {
+            tr = new CompanyTranslation { LanguageCode = lang };
+            company.Translations.Add(tr);
+        }
+
+        tr.CompanyTitle = input.Title.Trim();
+        tr.Address = input.Address;
+        tr.Bio = input.Bio;
+
+        await _db.SaveChangesAsync();
+        return OperationResult.Success();
+    }
+
+    public static string Initials(string name)
+    {
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(w => char.IsLetter(w[0]))
+            .ToList();
+        return words.Count switch
+        {
+            0 => "?",
+            1 => words[0][..Math.Min(2, words[0].Length)].ToUpperInvariant(),
+            _ => string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])))
+        };
+    }
+
+    private static string DisplayWebsite(string? url) =>
+        string.IsNullOrEmpty(url) ? "" : url.Replace("https://", "").Replace("http://", "").TrimEnd('/');
 }

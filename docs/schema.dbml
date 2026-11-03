@@ -1,0 +1,386 @@
+// ============================================================
+//  Neon / Postgres schema - tender platform
+//  Source of truth for the EF Core model in Domain/ + Infrastructure/Persistence/.
+//  Paste into https://dbdiagram.io/d
+//
+//  What DBML cannot express lives in the migrations:
+//   - InitialSchema:    CHECK constraints, partial indexes, GIN / trigram indexes, Postgres enums
+//   - DatabaseTriggers: updated_at trigger, company rating aggregate trigger
+//
+//  Additions to the original ERD (marked "added"), needed by the frontend:
+//   - tenders.budget_min / budget_max  budget chips and budget filter
+//   - tenders.status                   "Save as draft" vs "Publish tender"
+//   - companies.verification_status    admin console Verified / Pending review
+//   - indexes on every language_code FK (the convention "every FK is indexed")
+//
+//  Auth: ASP.NET Core Identity keeps its own identity_* tables (not shown).
+//  user_profiles.clerk_user_id holds the Identity user id, so moving to Clerk
+//  later only changes what is stored in that column.
+//
+//  Conventions:
+//   - snake_case everywhere, timestamptz for every point in time
+//   - money is numeric(12,3) (OMR has 3 decimals), never float
+//   - every foreign key column is indexed (Postgres does not do it for you)
+//   - translations: one row per (record, language), unique on that pair
+//   - fallback rule in the app: requested language, record default, then 'en'
+//   - DB must be UTF8 (Neon default), Arabic is stored as-is, never reversed
+// ============================================================
+
+Enum text_direction {
+  ltr
+  rtl
+}
+
+Enum request_status {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+Table languages {
+  code        text [pk, note: 'ISO 639-1, e.g. en, ar']
+  name        text [not null, note: 'English name, e.g. Arabic']
+  native_name text [not null, note: 'e.g. العربية']
+  direction   text_direction [not null, default: 'ltr']
+  is_active   boolean [not null, default: true]
+  is_default  boolean [not null, default: false, note: 'only one true (partial unique index)']
+  sort_order  int [not null, default: 0]
+}
+
+Table ui_translations {
+  id            text [pk]
+  namespace     text [not null, note: 'e.g. common, tender, chat']
+  key           text [not null, note: 'e.g. tender.bid_closing']
+  language_code text [not null]
+  value         text [not null]
+  created_at    timestamptz [not null, default: `now()`]
+  updated_at    timestamptz [not null, default: `now()`]
+
+  indexes {
+    (namespace, key, language_code) [unique]
+    language_code
+  }
+}
+
+Table tenders {
+  id                          text [pk]
+  external_tender_id          text [not null, unique, note: 'Portal Tender ID, e.g. 98629']
+  tender_no                   text [not null]
+  procurement_category_code   text [not null, note: 'SUPPLY, SERVICES, WORKS (checked)']
+  tender_type_code            text [not null, note: 'e.g. OPEN_LOCAL']
+  evaluation_type_code        text
+  envelope_type_code          text
+  is_alternate_bid_allowed    boolean [not null, default: false]
+  vendor_grades               text[] [note: 'GIN index']
+  prebid_clarification_mode   text
+  document_fee                numeric(12,3) [note: 'RO, >= 0']
+  document_fee_payment_mode   text
+  bond_percentage             numeric(6,3) [note: '0 to 100 (checked)']
+  is_e_bond_applicable        boolean [not null, default: false]
+  original_language           text [not null, default: 'en']
+  published_date              date [not null]
+  document_sales_start        timestamptz
+  document_sales_end          timestamptz
+  prebid_clarification_start  timestamptz
+  prebid_clarification_end    timestamptz
+  bid_submission_closing      timestamptz [not null]
+  priced_bid_opening          timestamptz
+  budget_min                  numeric(12,3) [note: 'added']
+  budget_max                  numeric(12,3) [note: 'added, >= budget_min']
+  status                      text [not null, default: 'PUBLISHED', note: 'added: DRAFT or PUBLISHED']
+  created_at                  timestamptz [not null, default: `now()`]
+  updated_at                  timestamptz [not null, default: `now()`]
+
+  indexes {
+    bid_submission_closing
+    published_date
+    procurement_category_code
+    original_language
+  }
+}
+
+Table tender_translations {
+  id                          text [pk]
+  tender_id                   text [not null]
+  language_code               text [not null]
+  entity_name                 text [not null]
+  title                       text [not null, note: 'trigram index']
+  procurement_category        text
+  procurement_sub_category    text [note: 'shown as the category label']
+  governorate                 text
+  wilayat                     text
+  note                        text [note: 'shown as the description']
+  is_machine_translated       boolean [not null, default: false]
+  created_at                  timestamptz [not null, default: `now()`]
+  updated_at                  timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tender_id, language_code) [unique]
+    language_code
+    (governorate, wilayat)
+  }
+}
+
+Table custom_fields {
+  id          text [pk]
+  tender_id   text [not null]
+  sort_order  int [not null, default: 0]
+  created_at  timestamptz [not null, default: `now()`]
+  updated_at  timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tender_id, sort_order)
+  }
+}
+
+Table custom_field_translations {
+  id              text [pk]
+  custom_field_id text [not null]
+  language_code   text [not null]
+  title           text [not null]
+  description     text [not null]
+
+  indexes {
+    (custom_field_id, language_code) [unique]
+    language_code
+  }
+}
+
+Table tender_requests {
+  id                 text [pk]
+  tender_id          text [not null]
+  company_profile_id text [not null, note: 'FK to companies.id']
+  status             request_status [not null, default: 'PENDING']
+  price              numeric(12,3) [note: 'RO, >= 0 (checked)']
+  days               int [note: 'delivery days, > 0 (checked)']
+  description        text
+  language_code      text
+  created_at         timestamptz [not null, default: `now()`]
+  updated_at         timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tender_id, company_profile_id) [unique, note: 'one request per company per tender']
+    (company_profile_id, status)
+    (tender_id, status)
+    language_code
+  }
+}
+
+Table companies {
+  id                  text [pk]
+  company_profile_id  text
+  company_number      text
+  company_website     text
+  company_email       text [not null, unique]
+  sectors             text[] [note: 'GIN index']
+  phone_number        text
+  profile_image       text
+  default_language    text [not null, default: 'en']
+  avg_communication   float [not null, default: 0, note: 'cached, maintained by trigger']
+  avg_deadline        float [not null, default: 0]
+  avg_experience      float [not null, default: 0]
+  avg_overall_rating  float [not null, default: 0]
+  avg_quality         float [not null, default: 0]
+  number_of_ratings   int   [not null, default: 0]
+  verification_status text  [not null, default: 'PENDING', note: 'added: PENDING or VERIFIED']
+  created_at          timestamptz [not null, default: `now()`]
+  updated_at          timestamptz [not null, default: `now()`]
+
+  indexes {
+    avg_overall_rating
+    default_language
+  }
+}
+
+Table company_translations {
+  id            text [pk]
+  company_id    text [not null]
+  language_code text [not null]
+  company_title text [not null, note: 'trigram index']
+  bio           text
+  address       text
+  created_at    timestamptz [not null, default: `now()`]
+  updated_at    timestamptz [not null, default: `now()`]
+
+  indexes {
+    (company_id, language_code) [unique]
+    language_code
+  }
+}
+
+Table custom_sections {
+  id                 text [pk]
+  company_profile_id text [not null, note: 'FK to companies.id']
+  file_url           text
+  sort_order         int [not null, default: 0]
+  created_at         timestamptz [not null, default: `now()`]
+  updated_at         timestamptz [not null, default: `now()`]
+
+  indexes {
+    (company_profile_id, sort_order)
+  }
+}
+
+Table custom_section_translations {
+  id                 text [pk]
+  custom_section_id  text [not null]
+  language_code      text [not null]
+  title              text [not null]
+  description        text [not null]
+  tab_name           text [not null]
+
+  indexes {
+    (custom_section_id, language_code) [unique]
+    language_code
+  }
+}
+
+Table user_profiles {
+  id                       text [pk]
+  name                     text [not null]
+  email                    text [not null, unique]
+  bio                      text
+  phone_number             text
+  address                  text
+  profile_image            text
+  role                     text [note: 'client, contractor, individual, admin']
+  company_that_worked_with text
+  clerk_user_id            text [not null, unique, note: 'auth provider user id (Identity today)']
+  company_id               text
+  preferred_language       text [not null, default: 'en']
+  timezone                 text [not null, default: 'Asia/Muscat']
+  created_at               timestamptz [not null, default: `now()`]
+  updated_at               timestamptz [not null, default: `now()`]
+
+  indexes {
+    company_id
+    preferred_language
+  }
+}
+
+Table chat_rooms {
+  id                           text [pk]
+  tender_id                    text
+  tender_request_id            text
+  sender_company_profile_id    text [not null]
+  receiver_company_profile_id  text [not null]
+  created_at                   timestamptz [not null, default: `now()`]
+  updated_at                   timestamptz [not null, default: `now()`]
+
+  indexes {
+    tender_id
+    tender_request_id
+    (sender_company_profile_id, receiver_company_profile_id)
+    receiver_company_profile_id
+  }
+}
+
+Table messages {
+  id                           text [pk]
+  chat_room_id                 text [not null]
+  content                      text [not null]
+  language_code                text
+  pdf_url                      text
+  read_status                  boolean [not null, default: false]
+  sender_company_profile_id    text [not null]
+  receiver_company_profile_id  text [not null]
+  created_at                   timestamptz [not null, default: `now()`]
+  updated_at                   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (chat_room_id, created_at)
+    sender_company_profile_id
+    receiver_company_profile_id
+    language_code
+  }
+}
+
+Table company_ratings {
+  id                text [pk]
+  rating_company_id text [not null, note: 'company giving the rating, <> rated_company_id']
+  rated_company_id  text [not null, note: 'company being rated']
+  tender_id         text
+  tender_request_id text [not null]
+  quality           int  [not null, note: '1 to 5 (checked), same for the next three']
+  communication     int  [not null]
+  experience        int  [not null]
+  deadline          int  [not null]
+  overall_rating    float [not null, note: 'average of the four']
+  comment           text
+  language_code     text
+  anonymous         boolean [not null, default: false]
+  created_at        timestamptz [not null, default: `now()`]
+
+  indexes {
+    (rating_company_id, tender_request_id) [unique, note: 'one rating per company per request']
+    rated_company_id
+    tender_id
+    tender_request_id
+    language_code
+  }
+}
+
+Table notifications {
+  id         text [pk]
+  user_id    text [not null]
+  type       text [not null, note: 'NEW_TENDER, DEADLINE_REMINDER, REQUEST_STATUS, MESSAGE']
+  params     jsonb
+  tender_id  text
+  actor_id   text [note: 'null for system notifications']
+  read       boolean [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, created_at) [note: 'plus partial index WHERE NOT read']
+    tender_id
+    actor_id
+  }
+}
+
+// i18n
+Ref: ui_translations.language_code                  > languages.code [delete: restrict]
+Ref: tender_translations.language_code              > languages.code [delete: restrict]
+Ref: custom_field_translations.language_code        > languages.code [delete: restrict]
+Ref: company_translations.language_code             > languages.code [delete: restrict]
+Ref: custom_section_translations.language_code      > languages.code [delete: restrict]
+Ref: tenders.original_language                      > languages.code [delete: restrict]
+Ref: companies.default_language                     > languages.code [delete: restrict]
+Ref: user_profiles.preferred_language               > languages.code [delete: restrict]
+Ref: tender_requests.language_code                  > languages.code [delete: set null]
+Ref: messages.language_code                         > languages.code [delete: set null]
+Ref: company_ratings.language_code                  > languages.code [delete: set null]
+
+Ref: tender_translations.tender_id                  > tenders.id [delete: cascade]
+Ref: custom_field_translations.custom_field_id      > custom_fields.id [delete: cascade]
+Ref: company_translations.company_id                > companies.id [delete: cascade]
+Ref: custom_section_translations.custom_section_id  > custom_sections.id [delete: cascade]
+
+// Company and user
+Ref: user_profiles.company_id                > companies.id [delete: set null]
+Ref: custom_sections.company_profile_id      > companies.id [delete: cascade]
+Ref: tender_requests.company_profile_id      > companies.id [delete: restrict]
+
+// Tender graph
+Ref: tender_requests.tender_id               > tenders.id [delete: restrict]
+Ref: custom_fields.tender_id                 > tenders.id [delete: cascade]
+Ref: chat_rooms.tender_id                    > tenders.id [delete: set null]
+Ref: chat_rooms.tender_request_id            > tender_requests.id [delete: set null]
+Ref: company_ratings.tender_id               > tenders.id [delete: set null]
+Ref: company_ratings.tender_request_id       > tender_requests.id [delete: restrict]
+Ref: notifications.tender_id                 > tenders.id [delete: cascade]
+
+// Chat
+Ref: chat_rooms.sender_company_profile_id    > companies.id [delete: restrict]
+Ref: chat_rooms.receiver_company_profile_id  > companies.id [delete: restrict]
+Ref: messages.sender_company_profile_id      > companies.id [delete: restrict]
+Ref: messages.receiver_company_profile_id    > companies.id [delete: restrict]
+Ref: messages.chat_room_id                   > chat_rooms.id [delete: cascade]
+
+// Ratings
+Ref: company_ratings.rating_company_id       > companies.id [delete: restrict]
+Ref: company_ratings.rated_company_id        > companies.id [delete: restrict]
+
+// Notifications
+Ref: notifications.user_id                   > user_profiles.id [delete: cascade]
+Ref: notifications.actor_id                  > user_profiles.id [delete: set null]

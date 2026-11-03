@@ -1,12 +1,17 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Munaqasat.Web.Data;
 using Munaqasat.Web.Models;
+using Munaqasat.Web.Services.Tenders;
 
 namespace Munaqasat.Web.Pages.Tenders;
 
 public class IndexModel : PageModel
 {
+    private readonly ITenderService _tenders;
+
+    public IndexModel(ITenderService tenders) => _tenders = tenders;
+
     [BindProperty(SupportsGet = true)]
     public List<string> Category { get; set; } = new() { "SUPPLY", "SERVICES", "WORKS" };
 
@@ -24,34 +29,19 @@ public class IndexModel : PageModel
 
     public List<Tender> Results { get; set; } = new();
 
-    public void OnGet()
+    public async Task OnGetAsync()
     {
-        var query = MockData.Tenders.AsEnumerable();
-
-        if (Category is { Count: > 0 })
-            query = query.Where(t => Category.Contains(t.Category));
-
-        if (!string.IsNullOrEmpty(Governorate))
-            query = query.Where(t => t.Governorate == Governorate);
-
-        if (MinScore > 0)
-            query = query.Where(t => t.Score >= MinScore);
-
-        if (!string.IsNullOrEmpty(Budget))
+        decimal? lo = null, hi = null;
+        var parts = Budget.Split('-');
+        if (parts.Length == 2
+            && decimal.TryParse(parts[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var l)
+            && decimal.TryParse(parts[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var h))
         {
-            var parts = Budget.Split('-');
-            var lo = decimal.Parse(parts[0]);
-            var hi = decimal.Parse(parts[1]);
-            query = query.Where(t => t.BudgetMax >= lo && t.BudgetMin <= hi);
+            lo = l;
+            hi = h;
         }
 
-        query = Sort switch
-        {
-            "closing" => query.OrderBy(t => t.Closing),
-            "newest" => query.OrderByDescending(t => t.Published),
-            _ => query.OrderByDescending(t => t.Score)
-        };
-
-        Results = query.ToList();
+        Results = await _tenders.SearchAsync(new TenderFilter(
+            Category, string.IsNullOrEmpty(Governorate) ? null : Governorate, lo, hi, MinScore, Sort));
     }
 }

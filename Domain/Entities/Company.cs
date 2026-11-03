@@ -1,55 +1,102 @@
 namespace Munaqasat.Web.Domain.Entities;
 
-public class Company : BaseEntity
+public class Company : IHasTimestamps
 {
-    public string Name { get; set; } = "";
-    public string NameAr { get; set; } = "";
+    public string Id { get; set; } = Ids.New();
+    public string? CompanyProfileId { get; set; }
+    public string? CompanyNumber { get; set; }
+    public string? CompanyWebsite { get; set; }
+    public string CompanyEmail { get; set; } = "";
+    public List<string>? Sectors { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? ProfileImage { get; set; }
+    public string DefaultLanguage { get; set; } = "en";
+    public Language DefaultLanguageNavigation { get; set; } = null!;
 
-    public string Slug { get; set; } = "";
+    // Cached aggregates, maintained by the company_ratings trigger.
+    public double AvgCommunication { get; set; }
+    public double AvgDeadline { get; set; }
+    public double AvgExperience { get; set; }
+    public double AvgOverallRating { get; set; }
+    public double AvgQuality { get; set; }
+    public int NumberOfRatings { get; set; }
 
-    public string Initials { get; set; } = "";
+    // Addition to the ERD for the admin console's Verified / Pending review column.
+    public string VerificationStatus { get; set; } = VerificationStatuses.Pending;
 
-    public string? CommercialRegistrationNumber { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
-    public string Address { get; set; } = "";
-    public string? Website { get; set; }
-    public string? LogoUrl { get; set; }
-    public string Bio { get; set; } = "";
-    public string BioAr { get; set; } = "";
-
-    public Guid? GovernorateId { get; set; }
-    public Governorate? Governorate { get; set; }
-
-    public CompanyVerificationStatus VerificationStatus { get; set; } = CompanyVerificationStatus.Pending;
-    public DateTimeOffset? VerifiedAt { get; set; }
-
-    public double RatingAverage { get; set; }
-    public int RatingCount { get; set; }
-
-    public ICollection<AppUser> Members { get; set; } = new List<AppUser>();
-    public ICollection<CompanySector> Sectors { get; set; } = new List<CompanySector>();
-    public ICollection<CompanyProfileSection> ProfileSections { get; set; } = new List<CompanyProfileSection>();
-    public ICollection<Bid> Bids { get; set; } = new List<Bid>();
-    public ICollection<Review> Reviews { get; set; } = new List<Review>();
-    public ICollection<CompanySubscription> Subscriptions { get; set; } = new List<CompanySubscription>();
+    public ICollection<CompanyTranslation> Translations { get; set; } = new List<CompanyTranslation>();
+    public ICollection<CustomSection> CustomSections { get; set; } = new List<CustomSection>();
+    public ICollection<UserProfile> Users { get; set; } = new List<UserProfile>();
+    public ICollection<TenderRequest> Requests { get; set; } = new List<TenderRequest>();
+    public ICollection<CompanyRating> RatingsReceived { get; set; } = new List<CompanyRating>();
+    public ICollection<CompanyRating> RatingsGiven { get; set; } = new List<CompanyRating>();
 }
 
-public class CompanySector
+public class CompanyTranslation : IHasTimestamps, ITranslation
 {
-    public Guid CompanyId { get; set; }
+    public string Id { get; set; } = Ids.New();
+    public string CompanyId { get; set; } = "";
     public Company Company { get; set; } = null!;
-
-    public Guid SectorId { get; set; }
-    public Sector Sector { get; set; } = null!;
+    public string LanguageCode { get; set; } = "";
+    public Language Language { get; set; } = null!;
+    public string CompanyTitle { get; set; } = "";
+    public string? Bio { get; set; }
+    public string? Address { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }
 
-public class CompanyProfileSection : BaseEntity
+public class CustomSection : IHasTimestamps
 {
-    public Guid CompanyId { get; set; }
+    public string Id { get; set; } = Ids.New();
+    public string CompanyProfileId { get; set; } = "";
     public Company Company { get; set; } = null!;
+    public string? FileUrl { get; set; }
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
-    public string Tab { get; set; } = "";
+    public ICollection<CustomSectionTranslation> Translations { get; set; } = new List<CustomSectionTranslation>();
+}
+
+public class CustomSectionTranslation : ITranslation
+{
+    public string Id { get; set; } = Ids.New();
+    public string CustomSectionId { get; set; } = "";
+    public CustomSection CustomSection { get; set; } = null!;
+    public string LanguageCode { get; set; } = "";
+    public Language Language { get; set; } = null!;
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
-    public int SortOrder { get; set; }
+    public string TabName { get; set; } = "";
+}
+
+public class UserProfile : IHasTimestamps
+{
+    public string Id { get; set; } = Ids.New();
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string? Bio { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? Address { get; set; }
+    public string? ProfileImage { get; set; }
+    public string? Role { get; set; }
+    public string? CompanyThatWorkedWith { get; set; }
+
+    /// <summary>
+    /// The auth provider's user id. Named after the ERD (Clerk); today it holds the
+    /// ASP.NET Core Identity user id, so switching to Clerk later only changes what is stored here.
+    /// </summary>
+    public string ClerkUserId { get; set; } = "";
+
+    public string? CompanyId { get; set; }
+    public Company? Company { get; set; }
+    public string PreferredLanguage { get; set; } = "en";
+    public Language PreferredLanguageNavigation { get; set; } = null!;
+    public string Timezone { get; set; } = "Asia/Muscat";
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

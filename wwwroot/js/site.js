@@ -177,16 +177,32 @@
     cfCount++;
   };
 
-  /* ---------------- admin: cosmetic accept/reject ---------------- */
+  /* ---------------- admin: accept/reject (posts to /Admin?handler=RequestStatus) ---------------- */
   window.adminSetStatus = function (btn, status) {
     var row = btn.closest("tr");
+    var requestId = row.dataset.requestId;
+    var token = document.querySelector('#adminToken input[name="__RequestVerificationToken"]');
+    if (requestId && token) {
+      var body = new URLSearchParams({ requestId: requestId, status: status, __RequestVerificationToken: token.value });
+      fetch("/Admin?handler=RequestStatus", { method: "POST", body: body })
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          markStatus(row, status);
+        })
+        .catch(function () { showToast("Could not update the request"); });
+      return;
+    }
+    markStatus(row, status);
+  };
+
+  function markStatus(row, status) {
     var statusCell = row.querySelector(".pill-status");
     var classMap = { ACCEPTED: "status-accepted", REJECTED: "status-rejected" };
     statusCell.className = "pill-status " + (classMap[status] || "status-pending");
     statusCell.textContent = status;
     row.querySelector(".row-actions").innerHTML = '<span style="color:var(--ink-faint);font-size:12px">Updated</span>';
     showToast("Request " + status.toLowerCase());
-  };
+  }
 
   /* ---------------- lang tabs on tender form ---------------- */
   window.setFormLang = function (lang) {
@@ -203,5 +219,7 @@
   window.pickLangCard = function (el) {
     document.querySelectorAll(".lang-card").forEach(function (c) { c.classList.remove("is-active"); });
     el.classList.add("is-active");
+    var input = document.getElementById("setLang");
+    if (input && el.dataset.lang) input.value = el.dataset.lang;
   };
 })();

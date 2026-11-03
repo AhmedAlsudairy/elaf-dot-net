@@ -1,48 +1,52 @@
+using NpgsqlTypes;
+
 namespace Munaqasat.Web.Domain;
 
-public enum AccountType
+/// <summary>Maps to the Postgres enum <c>text_direction</c>.</summary>
+public enum TextDirection
 {
-    Individual = 0,
-    Company = 1
+    [PgName("ltr")] Ltr,
+    [PgName("rtl")] Rtl
 }
 
-public enum TenderCategory
+/// <summary>Maps to the Postgres enum <c>request_status</c>.</summary>
+public enum RequestStatus
 {
-    Supply = 0,
-    Services = 1,
-    Works = 2
+    [PgName("PENDING")] Pending,
+    [PgName("ACCEPTED")] Accepted,
+    [PgName("REJECTED")] Rejected,
+    [PgName("WITHDRAWN")] Withdrawn
 }
 
-public enum TenderStatus
+public static class ProcurementCategories
 {
-    Draft = 0,
-    Published = 1,
-    Closed = 2,
-    Awarded = 3,
-    Cancelled = 4
+    public const string Supply = "SUPPLY";
+    public const string Services = "SERVICES";
+    public const string Works = "WORKS";
+
+    public static readonly string[] All = { Supply, Services, Works };
 }
 
-public enum BidStatus
+/// <summary>Values for <c>tenders.status</c> (an addition to the ERD so the form's "Save as draft" works).</summary>
+public static class TenderStatuses
 {
-    Pending = 0,
-    Accepted = 1,
-    Rejected = 2,
-    Withdrawn = 3
+    public const string Draft = "DRAFT";
+    public const string Published = "PUBLISHED";
 }
 
-public enum CompanyVerificationStatus
+/// <summary>Values for <c>companies.verification_status</c> (an addition to the ERD for the admin console).</summary>
+public static class VerificationStatuses
 {
-    Pending = 0,
-    Verified = 1,
-    Rejected = 2,
-    Suspended = 3
+    public const string Pending = "PENDING";
+    public const string Verified = "VERIFIED";
 }
 
-public enum SubscriptionStatus
+public static class Roles
 {
-    Trialing = 0,
-    Active = 1,
-    PastDue = 2,
-    Cancelled = 3,
-    Expired = 4
+    public const string Administrator = "Administrator";
+    public const string Client = "Client";
+    public const string Contractor = "Contractor";
+    public const string Individual = "Individual";
+
+    public static readonly string[] All = { Administrator, Client, Contractor, Individual };
 }

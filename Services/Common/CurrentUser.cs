@@ -1,22 +1,36 @@
 using System.Security.Claims;
-using Munaqasat.Web.Domain.Entities;
+using Munaqasat.Web.Domain;
 
 namespace Munaqasat.Web.Services.Common;
 
 public interface ICurrentUser
 {
     bool IsAuthenticated { get; }
-    Guid? UserId { get; }
 
-    Guid? CompanyId { get; }
+    /// <summary>Identity user id (stored in <c>user_profiles.clerk_user_id</c>).</summary>
+    string? AuthUserId { get; }
+
+    /// <summary><c>user_profiles.id</c>.</summary>
+    string? ProfileId { get; }
+
+    /// <summary><c>companies.id</c> of the user's company, if any.</summary>
+    string? CompanyId { get; }
+
+    string? Name { get; }
+
+    /// <summary>Frontend role key: client, contractor, individual or admin.</summary>
+    string? RoleKey { get; }
 
     bool IsAdministrator { get; }
-    bool IsInRole(string role);
 }
 
 public sealed class HttpContextCurrentUser : ICurrentUser
 {
-    public const string CompanyIdClaimType = "munaqasat:company_id";
+    public const string ProfileIdClaim = "munaqasat:profile_id";
+    public const string CompanyIdClaim = "munaqasat:company_id";
+    public const string RoleKeyClaim = "munaqasat:role";
+    public const string LanguageClaim = "munaqasat:lang";
+    public const string DisplayNameClaim = "munaqasat:name";
 
     private readonly IHttpContextAccessor _accessor;
 
@@ -25,14 +39,12 @@ public sealed class HttpContextCurrentUser : ICurrentUser
     private ClaimsPrincipal? Principal => _accessor.HttpContext?.User;
 
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated ?? false;
+    public string? AuthUserId => Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+    public string? ProfileId => NullIfEmpty(Principal?.FindFirstValue(ProfileIdClaim));
+    public string? CompanyId => NullIfEmpty(Principal?.FindFirstValue(CompanyIdClaim));
+    public string? Name => NullIfEmpty(Principal?.FindFirstValue(DisplayNameClaim));
+    public string? RoleKey => NullIfEmpty(Principal?.FindFirstValue(RoleKeyClaim));
+    public bool IsAdministrator => Principal?.IsInRole(Roles.Administrator) ?? false;
 
-    public Guid? UserId =>
-        Guid.TryParse(Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
-
-    public Guid? CompanyId =>
-        Guid.TryParse(Principal?.FindFirstValue(CompanyIdClaimType), out var id) ? id : null;
-
-    public bool IsAdministrator => IsInRole(AppRoles.Administrator);
-
-    public bool IsInRole(string role) => Principal?.IsInRole(role) ?? false;
+    private static string? NullIfEmpty(string? value) => string.IsNullOrEmpty(value) ? null : value;
 }

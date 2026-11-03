@@ -4,6 +4,11 @@
     ViewData["Title"] = "Settings";
     ViewData["AppShell"] = true;
     ViewData["ActiveNav"] = "settings";
+    var v = Model.View!;
+    var p = v.Profile;
+    var initials = Munaqasat.Web.Services.Companies.CompanyService.Initials(p.Name);
+    var sectors = v.Company?.Sectors ?? new List<string>();
+    var timezones = new Dictionary<string, string> { ["Asia/Muscat"] = "Asia/Muscat (GMT+4)", ["Asia/Dubai"] = "Asia/Dubai (GMT+4)", ["UTC"] = "UTC" };
 }
 
 <div class="page-head"><div><h1>Settings</h1><p class="sub">Manage your profile, company and platform preferences.</p></div></div>
@@ -24,19 +29,19 @@
                 <input type="hidden" name="section" value="profile" />
                 <div class="form-section">
                     <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px">
-                        <div class="avatar avatar-lg">AR</div>
+                        <div class="avatar avatar-lg">@initials</div>
                         <button type="button" class="btn btn-secondary btn-sm"><svg class="icon" style="width:15px;height:15px"><use href="#i-upload"></use></svg> Upload photo</button>
                     </div>
                     <div class="field-stack">
                         <div class="field-row">
-                            <div class="field"><label class="field-label" for="pName">Full name</label><input id="pName" type="text" value="Ahmed Al Rawahi"></div>
-                            <div class="field"><label class="field-label" for="pEmail">Email</label><input id="pEmail" type="email" value="ahmed@gulfsystems.om"></div>
+                            <div class="field"><label class="field-label" for="pName">Full name</label><input id="pName" name="name" type="text" value="@p.Name" required></div>
+                            <div class="field"><label class="field-label" for="pEmail">Email</label><input id="pEmail" name="email" type="email" value="@p.Email" required></div>
                         </div>
                         <div class="field-row">
-                            <div class="field"><label class="field-label" for="pPhone">Phone</label><input id="pPhone" type="tel" value="+968 9123 4567"></div>
-                            <div class="field"><label class="field-label" for="pTz">Timezone</label><select id="pTz"><option selected>Asia/Muscat (GMT+4)</option><option>Asia/Dubai (GMT+4)</option><option>UTC</option></select></div>
+                            <div class="field"><label class="field-label" for="pPhone">Phone</label><input id="pPhone" name="phone" type="tel" value="@p.PhoneNumber"></div>
+                            <div class="field"><label class="field-label" for="pTz">Timezone</label><select id="pTz" name="timezone">@foreach (var tz in timezones) { <option value="@tz.Key" selected="@(p.Timezone == tz.Key)">@tz.Value</option> }</select></div>
                         </div>
-                        <div class="field"><label class="field-label" for="pBio">Bio</label><textarea id="pBio">Procurement manager overseeing IT and facilities tenders.</textarea></div>
+                        <div class="field"><label class="field-label" for="pBio">Bio</label><textarea id="pBio" name="bio">@p.Bio</textarea></div>
                     </div>
                 </div>
                 <div class="form-actions"><a class="btn btn-secondary" href="/Settings">Cancel</a><button class="btn btn-primary" type="submit">Save changes</button></div>
@@ -45,19 +50,26 @@
 
         <div data-tab-panel="settings" data-tab-value="company" hidden>
             <h2>Company</h2><p class="desc">Shown on your public company profile and tender requests.</p>
+            @if (v.Company is null)
+            {
+                <p class="desc">Your account is not linked to a company. Sign up as a client organization or contractor to manage a company profile.</p>
+            }
+            else
+            {
             <form method="post" asp-page-handler="Save">
                 <input type="hidden" name="section" value="company" />
                 <div class="field-stack">
                     <div class="field-row">
-                        <div class="field"><label class="field-label" for="scTitle">Company name</label><input id="scTitle" type="text" value="Gulf Systems Integration LLC"></div>
-                        <div class="field"><label class="field-label" for="scWebsite">Website</label><input id="scWebsite" type="url" value="https://gulfsystems.om"></div>
+                        <div class="field"><label class="field-label" for="scTitle">Company name</label><input id="scTitle" name="companyTitle" type="text" value="@v.CompanyTitle" required></div>
+                        <div class="field"><label class="field-label" for="scWebsite">Website</label><input id="scWebsite" name="website" type="url" value="@v.Company?.CompanyWebsite"></div>
                     </div>
-                    <div class="field"><label class="field-label" for="scAddress">Address</label><input id="scAddress" type="text" value="Al Khuwair, Way 3115, Muscat"></div>
-                    <div class="field"><label class="field-label">Sectors</label><div class="co-tags"><span class="tag tag-blue">Technology</span><span class="tag tag-blue">Networking</span><span class="tag tag-blue">Cloud</span><span class="tag tag-neutral" style="cursor:pointer">+ Add sector</span></div></div>
-                    <div class="field"><label class="field-label" for="scBio">Company bio</label><textarea id="scBio">Gulf Systems Integration LLC delivers enterprise networking, cloud and systems integration projects for government and private-sector clients across Oman.</textarea></div>
+                    <div class="field"><label class="field-label" for="scAddress">Address</label><input id="scAddress" name="address" type="text" value="@v.CompanyAddress"></div>
+                    <div class="field"><label class="field-label">Sectors</label><div class="co-tags" style="margin-bottom:8px">@foreach (var sector in sectors) { <span class="tag tag-blue">@sector</span> }</div><input id="scSectors" name="sectors" type="text" value="@string.Join(", ", sectors)" placeholder="Comma separated, e.g. Technology, Networking"></div>
+                    <div class="field"><label class="field-label" for="scBio">Company bio</label><textarea id="scBio" name="companyBio">@v.CompanyBio</textarea></div>
                 </div>
                 <div class="form-actions"><a class="btn btn-secondary" href="/Settings">Cancel</a><button class="btn btn-primary" type="submit">Save changes</button></div>
             </form>
+            }
         </div>
 
         <div data-tab-panel="settings" data-tab-value="notifications" hidden>
@@ -74,9 +86,9 @@
             <form method="post" asp-page-handler="Save">
                 <input type="hidden" name="section" value="language" />
                 <div class="field-stack">
-                    <div class="lang-card is-active" onclick="pickLangCard(this)"><span class="flag">EN</span><div><strong>English</strong><div style="font-size:12px;color:var(--ink-soft)">Left-to-right</div></div></div>
-                    <div class="lang-card" onclick="pickLangCard(this)"><span class="flag">ع</span><div><strong>العربية (Arabic)</strong><div style="font-size:12px;color:var(--ink-soft)">Right-to-left</div></div></div>
-                    <div class="field" style="max-width:320px"><label class="field-label" for="setTz">Timezone</label><select id="setTz"><option selected>Asia/Muscat (GMT+4)</option><option>UTC</option></select></div>
+                    <input type="hidden" id="setLang" name="language" value="@p.PreferredLanguage" /><div class="lang-card @(p.PreferredLanguage == "en" ? "is-active" : "")" data-lang="en" onclick="pickLangCard(this)"><span class="flag">EN</span><div><strong>English</strong><div style="font-size:12px;color:var(--ink-soft)">Left-to-right</div></div></div>
+                    <div class="lang-card @(p.PreferredLanguage == "ar" ? "is-active" : "")" data-lang="ar" onclick="pickLangCard(this)"><span class="flag">ع</span><div><strong>العربية (Arabic)</strong><div style="font-size:12px;color:var(--ink-soft)">Right-to-left</div></div></div>
+                    <div class="field" style="max-width:320px"><label class="field-label" for="setTz">Timezone</label><select id="setTz" name="timezone">@foreach (var tz in timezones) { <option value="@tz.Key" selected="@(p.Timezone == tz.Key)">@tz.Value</option> }</select></div>
                 </div>
                 <div class="form-actions"><button class="btn btn-primary" type="submit">Save changes</button></div>
             </form>
@@ -102,8 +114,8 @@
                 <input type="hidden" name="section" value="security" />
                 <div class="form-section">
                     <div class="field-row">
-                        <div class="field"><label class="field-label" for="secPass1">New password</label><input id="secPass1" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
-                        <div class="field"><label class="field-label" for="secPass2">Confirm new password</label><input id="secPass2" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+                        <div class="field"><label class="field-label" for="secPass1">New password</label><input id="secPass1" name="newPassword" type="password" autocomplete="new-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+                        <div class="field"><label class="field-label" for="secPass2">Confirm new password</label><input id="secPass2" name="confirmPassword" type="password" autocomplete="new-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
                     </div>
                 </div>
                 <div class="notif-row"><div><strong>Two-factor authentication</strong><span>Require a code in addition to your password</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>

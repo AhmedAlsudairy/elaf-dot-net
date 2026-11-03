@@ -3,8 +3,16 @@ using Munaqasat.Web.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/Settings");
+    options.Conventions.AuthorizePage("/Tenders/Create", AuthorizationPolicies.TenderIssuer);
+    options.Conventions.AuthorizeFolder("/Admin", AuthorizationPolicies.Administrator);
+});
+
+// Emit Arabic (and any other script) as-is instead of &#x...; entities.
+builder.Services.Configure<Microsoft.Extensions.WebEncoders.WebEncoderOptions>(options =>
+    options.TextEncoderSettings = new System.Text.Encodings.Web.TextEncoderSettings(System.Text.Unicode.UnicodeRanges.All));
 
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 builder.Services.AddApplicationIdentity(builder.Environment);
@@ -18,11 +26,9 @@ if (app.Configuration.GetValue("Seed:RunOnStartup", app.Environment.IsDevelopmen
     await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

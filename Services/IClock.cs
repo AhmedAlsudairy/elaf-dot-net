@@ -9,7 +9,7 @@ public interface IClock
 
 public sealed class SystemClock : IClock
 {
-    private static readonly TimeSpan OmanOffset = TimeSpan.FromHours(4);
+    public static readonly TimeSpan OmanOffset = TimeSpan.FromHours(4);
 
     public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 

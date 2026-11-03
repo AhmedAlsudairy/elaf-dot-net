@@ -1,120 +1,106 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Munaqasat.Web.Domain;
 using Munaqasat.Web.Domain.Entities;
+using static Munaqasat.Web.Infrastructure.Persistence.Configurations.ModelBuilderExtensions;
 
 namespace Munaqasat.Web.Infrastructure.Persistence.Configurations;
 
 public class TenderConfiguration : IEntityTypeConfiguration<Tender>
 {
-    public void Configure(EntityTypeBuilder<Tender> builder)
+    public void Configure(EntityTypeBuilder<Tender> b)
     {
-        builder.ToTable("Tenders");
+        b.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_tenders_bond_percentage", "bond_percentage IS NULL OR bond_percentage BETWEEN 0 AND 100");
+            t.HasCheckConstraint("ck_tenders_document_fee", "document_fee IS NULL OR document_fee >= 0");
+            t.HasCheckConstraint("ck_tenders_budget", "budget_min IS NULL OR budget_max IS NULL OR budget_min <= budget_max");
+            t.HasCheckConstraint("ck_tenders_category", "procurement_category_code IN ('SUPPLY','SERVICES','WORKS')");
+            t.HasCheckConstraint("ck_tenders_status", "status IN ('DRAFT','PUBLISHED')");
+        });
 
-        builder.Property(t => t.Reference).HasMaxLength(120).IsRequired();
-        builder.Property(t => t.ExternalId).HasMaxLength(120);
-        builder.Property(t => t.Title).HasMaxLength(400).IsRequired();
-        builder.Property(t => t.TitleAr).HasMaxLength(400);
-        builder.Property(t => t.Description).HasMaxLength(8000);
-        builder.Property(t => t.DescriptionAr).HasMaxLength(8000);
-        builder.Property(t => t.IssuingEntity).HasMaxLength(300).IsRequired();
-        builder.Property(t => t.CategoryLabel).HasMaxLength(120);
-        builder.Property(t => t.Currency).HasMaxLength(3).IsRequired();
-        builder.Property(t => t.Icon).HasMaxLength(40);
+        b.HasIndex(e => e.ExternalTenderId).IsUnique();
+        b.Property(e => e.IsAlternateBidAllowed).HasDefaultValue(false);
+        b.Property(e => e.IsEBondApplicable).HasDefaultValue(false);
+        b.Property(e => e.DocumentFee).HasColumnType(Money);
+        b.Property(e => e.BondPercentage).HasColumnType("numeric(6,3)");
+        b.Property(e => e.BudgetMin).HasColumnType(Money);
+        b.Property(e => e.BudgetMax).HasColumnType(Money);
+        b.Property(e => e.OriginalLanguage).HasDefaultValue("en");
+        b.Property(e => e.Status).HasDefaultValue(TenderStatuses.Published);
+        b.HasTimestamps();
 
-        builder.Property(t => t.Category).HasConversion<string>().HasMaxLength(20);
-        builder.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
+        b.HasIndex(e => e.BidSubmissionClosing);
+        b.HasIndex(e => e.PublishedDate);
+        b.HasIndex(e => e.ProcurementCategoryCode);
+        b.HasIndex(e => e.OriginalLanguage);
+        b.HasIndex(e => e.VendorGrades).HasMethod("gin");
 
-        builder.Property(t => t.BudgetMin).HasPrecision(18, 3);
-        builder.Property(t => t.BudgetMax).HasPrecision(18, 3);
-        builder.Property(t => t.DocumentFee).HasPrecision(18, 3);
-        builder.Property(t => t.BidBondPercentage).HasPrecision(5, 2);
-
-        builder.HasIndex(t => t.ExternalId);
-
-        builder.HasIndex(t => new { t.Status, t.ClosingOn });
-        builder.HasIndex(t => t.Category);
-        builder.HasIndex(t => t.GovernorateId);
-        builder.HasIndex(t => t.OwnerCompanyId);
-
-        builder.HasOne(t => t.Governorate)
-            .WithMany()
-            .HasForeignKey(t => t.GovernorateId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasOne(t => t.Wilayat)
-            .WithMany()
-            .HasForeignKey(t => t.WilayatId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasOne(t => t.OwnerCompany)
-            .WithMany()
-            .HasForeignKey(t => t.OwnerCompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(t => t.CreatedByUser)
-            .WithMany()
-            .HasForeignKey(t => t.CreatedByUserId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasMany(t => t.CustomFields)
-            .WithOne(f => f.Tender)
-            .HasForeignKey(f => f.TenderId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(t => t.Attachments)
-            .WithOne(a => a.Tender)
-            .HasForeignKey(a => a.TenderId)
-            .OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(e => e.OriginalLanguageNavigation).WithMany()
+            .HasForeignKey(e => e.OriginalLanguage).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
-public class TenderCustomFieldConfiguration : IEntityTypeConfiguration<TenderCustomField>
+public class TenderTranslationConfiguration : IEntityTypeConfiguration<TenderTranslation>
 {
-    public void Configure(EntityTypeBuilder<TenderCustomField> builder)
+    public void Configure(EntityTypeBuilder<TenderTranslation> b)
     {
-        builder.ToTable("TenderCustomFields");
+        b.Property(e => e.IsMachineTranslated).HasDefaultValue(false);
+        b.HasTimestamps();
 
-        builder.Property(f => f.Title).HasMaxLength(250).IsRequired();
-        builder.Property(f => f.Description).HasMaxLength(4000);
+        b.HasIndex(e => new { e.TenderId, e.LanguageCode }).IsUnique();
+        b.HasIndex(e => e.LanguageCode);
+        b.HasIndex(e => new { e.Governorate, e.Wilayat });
+        b.HasIndex(e => e.Title).HasMethod("gin").HasOperators("gin_trgm_ops").HasDatabaseName("ix_tender_translations_title_trgm");
 
-        builder.HasIndex(f => new { f.TenderId, f.SortOrder });
+        b.HasOne(e => e.Tender).WithMany(t => t.Translations).HasForeignKey(e => e.TenderId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(e => e.Language).WithMany().HasForeignKey(e => e.LanguageCode).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
-public class TenderAttachmentConfiguration : IEntityTypeConfiguration<TenderAttachment>
+public class CustomFieldConfiguration : IEntityTypeConfiguration<CustomField>
 {
-    public void Configure(EntityTypeBuilder<TenderAttachment> builder)
+    public void Configure(EntityTypeBuilder<CustomField> b)
     {
-        builder.ToTable("TenderAttachments");
-
-        builder.Property(a => a.FileName).HasMaxLength(300).IsRequired();
-        builder.Property(a => a.StorageKey).HasMaxLength(500).IsRequired();
-        builder.Property(a => a.ContentType).HasMaxLength(150).IsRequired();
-
-        builder.HasIndex(a => a.TenderId);
+        b.Property(e => e.SortOrder).HasDefaultValue(0);
+        b.HasTimestamps();
+        b.HasIndex(e => new { e.TenderId, e.SortOrder });
+        b.HasOne(e => e.Tender).WithMany(t => t.CustomFields).HasForeignKey(e => e.TenderId).OnDelete(DeleteBehavior.Cascade);
     }
 }
 
-public class TenderMatchConfiguration : IEntityTypeConfiguration<TenderMatch>
+public class CustomFieldTranslationConfiguration : IEntityTypeConfiguration<CustomFieldTranslation>
 {
-    public void Configure(EntityTypeBuilder<TenderMatch> builder)
+    public void Configure(EntityTypeBuilder<CustomFieldTranslation> b)
     {
-        builder.ToTable("TenderMatches");
+        b.HasIndex(e => new { e.CustomFieldId, e.LanguageCode }).IsUnique();
+        b.HasIndex(e => e.LanguageCode);
+        b.HasOne(e => e.CustomField).WithMany(f => f.Translations).HasForeignKey(e => e.CustomFieldId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(e => e.Language).WithMany().HasForeignKey(e => e.LanguageCode).OnDelete(DeleteBehavior.Restrict);
+    }
+}
 
-        builder.HasKey(m => new { m.TenderId, m.CompanyId });
+public class TenderRequestConfiguration : IEntityTypeConfiguration<TenderRequest>
+{
+    public void Configure(EntityTypeBuilder<TenderRequest> b)
+    {
+        b.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_tender_requests_price", "price IS NULL OR price >= 0");
+            t.HasCheckConstraint("ck_tender_requests_days", "days IS NULL OR days > 0");
+        });
 
-        builder.Property(m => m.Reason).HasMaxLength(300);
+        b.Property(e => e.Status).HasDefaultValue(RequestStatus.Pending);
+        b.Property(e => e.Price).HasColumnType(Money);
+        b.HasTimestamps();
 
-        builder.HasOne(m => m.Tender)
-            .WithMany(t => t.Matches)
-            .HasForeignKey(m => m.TenderId)
-            .OnDelete(DeleteBehavior.Cascade);
+        b.HasIndex(e => new { e.TenderId, e.CompanyProfileId }).IsUnique();
+        b.HasIndex(e => new { e.CompanyProfileId, e.Status });
+        b.HasIndex(e => new { e.TenderId, e.Status });
+        b.HasIndex(e => e.LanguageCode);
 
-        builder.HasOne(m => m.Company)
-            .WithMany()
-            .HasForeignKey(m => m.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasIndex(m => new { m.CompanyId, m.Score });
+        b.HasOne(e => e.Tender).WithMany(t => t.Requests).HasForeignKey(e => e.TenderId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(e => e.Company).WithMany(c => c.Requests).HasForeignKey(e => e.CompanyProfileId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(e => e.Language).WithMany().HasForeignKey(e => e.LanguageCode).OnDelete(DeleteBehavior.SetNull);
     }
 }

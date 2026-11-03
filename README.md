@@ -2,13 +2,13 @@
 
 ASP.NET Core 8 Razor Pages tender marketplace (tenders, tender detail, company profiles, auth, settings, admin console, tender form), bilingual English/Arabic.
 
-The UI is built out and still reads from `Data/MockData.cs`. The backend behind it — EF Core schema, ASP.NET Core Identity and the service layer — is in place and ready to be wired into the pages.
+The pages read and write a PostgreSQL database through EF Core, with a schema that follows the tender platform ERD (multi-language content, RTL-ready), ASP.NET Core Identity for sign-in, and a service layer behind every page.
 
 ## Run locally
 
-Requires .NET 8 and a PostgreSQL 14+ server.
+Requires .NET 8 and PostgreSQL 14+ (local, Docker, or Neon).
 
-No credentials live in this repository. The connection string and the administrator seed come from [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets), which are stored per-developer outside the working tree.
+No credentials live in this repository. The connection string and the administrator seed come from [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
 
 ```bash
 dotnet tool restore
@@ -17,62 +17,28 @@ dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Da
 dotnet user-secrets set "Seed:AdministratorEmail" "you@example.com"
 dotnet user-secrets set "Seed:AdministratorPassword" "<a password of your own>"
 
-dotnet dotnet-ef database update
 dotnet run
 ```
 
-Then open the URL printed in the console (e.g. `http://localhost:5022`).
+For Neon, use its connection string in the same key, e.g. `Host=<project>.neon.tech;Database=neondb;Username=<user>;Password=<password>;SSL Mode=Require`.
 
-On startup in Development the app runs pending migrations and seeds reference data (roles, sectors, the 11 governorates and their wilayats, subscription plans) plus the administrator account. Set `Seed:RunOnStartup` to `false` to turn that off. The administrator is skipped unless both seed values are set.
+In Development, startup applies migrations and seeds languages (en, ar), roles and the administrator. `Seed:SampleData` (on in `appsettings.Development.json`) also loads the sample tenders, companies, requests and ratings the UI was designed with. Re-running is safe: every seed step is idempotent.
 
-In hosting, pass the same values as environment variables instead: `ConnectionStrings__Default`, `Seed__AdministratorEmail`, `Seed__AdministratorPassword`.
-
-## Verifying the backend
-
-The schema and seeding can be checked end to end today. The Razor Pages still read `Data/MockData.cs`, so the service layer is not yet reachable through the UI.
-
-```bash
-dotnet build
-dotnet dotnet-ef migrations list
-dotnet dotnet-ef database update
-dotnet run
-```
-
-A successful run logs the applied migration and the seed counts. Confirm the result in the database:
-
-```sql
-\dt
-SELECT COUNT(*) FROM "Governorates";          -- 11
-SELECT COUNT(*) FROM "Wilayats";              -- 61
-SELECT COUNT(*) FROM "Sectors";               -- 16
-SELECT COUNT(*) FROM "SubscriptionPlans";     -- 3
-SELECT "Name" FROM "Roles" ORDER BY "Name";   -- Administrator, CompanyMember, CompanyOwner, Individual
-SELECT "Email" FROM "Users";                  -- the seeded administrator
-```
-
-Re-running `dotnet run` must not duplicate any of those rows: the seeder is idempotent.
-
-To prove the schema can be rebuilt from scratch:
-
-```bash
-dotnet dotnet-ef database drop --force
-dotnet dotnet-ef database update
-```
-
-## Project layout
-
-- `Domain/` — entities and enums, free of persistence concerns
-- `Infrastructure/Persistence/` — `ApplicationDbContext`, one `IEntityTypeConfiguration` per aggregate, migrations, reference-data seeder
-- `Infrastructure/DependencyInjection.cs` — `AddPersistence`, `AddApplicationIdentity`, `AddApplicationServices`
-- `Services/` — application services: tenders, companies, bids, reviews, match scoring
-- `Pages/` — Razor Pages (one folder per feature area: Account, Tenders, Companies, Settings, Admin)
-- `Pages/Shared/_Layout.cshtml` — single layout that switches between the marketing shell and the signed-in app shell
-- `Models/`, `Data/MockData.cs` — view models and the sample data the pages still use
-- `wwwroot/css/site.css`, `wwwroot/js/site.js` — design system styles and interactivity (tabs, toasts, filters)
+In hosting, pass the same values as environment variables: `ConnectionStrings__Default`, `Seed__AdministratorEmail`, `Seed__AdministratorPassword`.
 
 ## Database
 
-PostgreSQL via Npgsql. Money is `numeric(18,3)` because the rial has three decimal places. Enums are stored as text so the values stay readable in SQL and reordering a case cannot reinterpret existing rows. `CreatedAt` and `UpdatedAt` are stamped centrally in `ApplicationDbContext.SaveChanges`.
+The schema follows the ERD in [`docs/schema.dbml`](docs/schema.dbml) (paste it into dbdiagram.io). Highlights:
+
+- snake_case tables and columns, text ids, `timestamptz` everywhere, money as `numeric(12,3)`
+- i18n: one translation row per record and language (`tender_translations`, `company_translations`, ...). Reads use the fallback **requested language, then the record's default, then English**. The request language comes from `?lang=`, the `munaqasat_lang` cookie, then the user's `preferred_language`.
+- Postgres enums `request_status` and `text_direction`
+- CHECK constraints (bond 0-100, price >= 0, days > 0, ratings 1-5, ...), a partial unique index for the single default language, a partial index for unread notifications, GIN indexes on array columns and trigram indexes on titles
+- triggers (migration `DatabaseTriggers`): `updated_at` on every table that has it, and the rating aggregate that keeps `companies.avg_*` / `number_of_ratings` current
+
+Additions to the ERD that the frontend needs are marked "added" in the DBML: `tenders.budget_min/budget_max/status` and `companies.verification_status`.
+
+Auth uses ASP.NET Core Identity (`identity_*` tables). `user_profiles.clerk_user_id` stores the Identity user id, so a later move to Clerk only changes what goes in that column.
 
 Add a migration after changing an entity:
 
@@ -80,18 +46,38 @@ Add a migration after changing an entity:
 dotnet dotnet-ef migrations add <Name> -o Infrastructure/Persistence/Migrations
 ```
 
+## Project layout
+
+- `Domain/` — entities and enums mirroring the ERD
+- `Infrastructure/Persistence/` — `ApplicationDbContext`, one configuration per area, migrations, seeder and sample data
+- `Infrastructure/DependencyInjection.cs` — `AddPersistence`, `AddApplicationIdentity`, `AddApplicationServices`
+- `Services/` — tenders (search, match score, create, requests), companies, accounts, request language
+- `Models/` — view models the Razor Pages render; services map entities to these
+- `Pages/` — Razor Pages (Account, Tenders, Companies, Settings, Admin)
+- `Data/Pricing.cs` — pricing tiers (not in the ERD)
+- `wwwroot/` — design system styles and interactivity
+
+## Access
+
+| Page | Who |
+| --- | --- |
+| Home, tender list and details, company profiles | everyone |
+| Submit a request (tender details) | signed-in company accounts |
+| Settings | signed-in users |
+| Post a tender | Client and Administrator roles |
+| Admin console | Administrator role |
+
 ## Configuration
 
 | Key | Where it belongs | Purpose |
 | --- | --- | --- |
 | `ConnectionStrings:Default` | user secrets / environment | PostgreSQL connection string. Required. |
 | `Seed:RunOnStartup` | `appsettings.*.json` | Migrate and seed on startup. On in Development, off elsewhere. |
+| `Seed:SampleData` | `appsettings.*.json` | Load the sample content. On in Development only. |
 | `Seed:AdministratorEmail` | user secrets / environment | Administrator account to create if it does not exist. |
-| `Seed:AdministratorPassword` | user secrets / environment | Password for that account. Seeding is skipped unless both are set. |
+| `Seed:AdministratorPassword` | user secrets / environment | Password for that account. Skipped unless both are set. |
 | `Seed:AdministratorName` | user secrets / environment | Display name. Optional. |
-
-The committed `appsettings.json` and `appsettings.Development.json` hold no credentials and must stay that way. Anything secret goes in user secrets locally and environment variables in hosting.
 
 ## Deployment
 
-Targets ASP.NET Core 8, suitable for MonsterASP.NET hosting via `dotnet publish` or the hosting panel's Git/FTP deployment.
+Targets ASP.NET Core 8, suitable for MonsterASP.NET hosting via `dotnet publish` or the hosting panel's Git/FTP deployment. Run migrations against the production database before switching traffic (`Seed:RunOnStartup` is off outside Development).

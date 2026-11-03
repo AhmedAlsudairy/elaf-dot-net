@@ -55,6 +55,7 @@ public class UserRow
 
 public class TenderRequestRow
 {
+    public string Id { get; set; } = "";
     public string TenderId { get; set; } = "";
     public string Company { get; set; } = "";
     public decimal Price { get; set; }

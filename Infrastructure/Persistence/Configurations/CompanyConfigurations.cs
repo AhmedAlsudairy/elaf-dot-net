@@ -1,77 +1,86 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Munaqasat.Web.Domain;
 using Munaqasat.Web.Domain.Entities;
 
 namespace Munaqasat.Web.Infrastructure.Persistence.Configurations;
 
 public class CompanyConfiguration : IEntityTypeConfiguration<Company>
 {
-    public void Configure(EntityTypeBuilder<Company> builder)
+    public void Configure(EntityTypeBuilder<Company> b)
     {
-        builder.ToTable("Companies");
+        b.ToTable(t => t.HasCheckConstraint("ck_companies_verification_status", "verification_status IN ('PENDING','VERIFIED')"));
 
-        builder.Property(c => c.Name).HasMaxLength(250).IsRequired();
-        builder.Property(c => c.NameAr).HasMaxLength(250);
-        builder.Property(c => c.Slug).HasMaxLength(120).IsRequired();
-        builder.Property(c => c.Initials).HasMaxLength(4);
-        builder.Property(c => c.CommercialRegistrationNumber).HasMaxLength(50);
-        builder.Property(c => c.Address).HasMaxLength(400);
-        builder.Property(c => c.Website).HasMaxLength(250);
-        builder.Property(c => c.LogoUrl).HasMaxLength(500);
-        builder.Property(c => c.VerificationStatus).HasConversion<string>().HasMaxLength(20);
+        b.HasIndex(e => e.CompanyEmail).IsUnique();
+        b.Property(e => e.DefaultLanguage).HasDefaultValue("en");
+        b.Property(e => e.AvgCommunication).HasDefaultValue(0d);
+        b.Property(e => e.AvgDeadline).HasDefaultValue(0d);
+        b.Property(e => e.AvgExperience).HasDefaultValue(0d);
+        b.Property(e => e.AvgOverallRating).HasDefaultValue(0d);
+        b.Property(e => e.AvgQuality).HasDefaultValue(0d);
+        b.Property(e => e.NumberOfRatings).HasDefaultValue(0);
+        b.Property(e => e.VerificationStatus).HasDefaultValue(VerificationStatuses.Pending);
+        b.HasTimestamps();
 
-        builder.HasIndex(c => c.Slug).IsUnique();
+        b.HasIndex(e => e.AvgOverallRating);
+        b.HasIndex(e => e.DefaultLanguage);
+        b.HasIndex(e => e.Sectors).HasMethod("gin");
 
-        builder.HasIndex(c => c.CommercialRegistrationNumber)
-            .IsUnique()
-            .HasFilter("\"CommercialRegistrationNumber\" IS NOT NULL");
-
-        builder.HasIndex(c => c.VerificationStatus);
-
-        builder.HasOne(c => c.Governorate)
-            .WithMany()
-            .HasForeignKey(c => c.GovernorateId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasMany(c => c.ProfileSections)
-            .WithOne(s => s.Company)
-            .HasForeignKey(s => s.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(e => e.DefaultLanguageNavigation).WithMany()
+            .HasForeignKey(e => e.DefaultLanguage).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
-public class CompanySectorConfiguration : IEntityTypeConfiguration<CompanySector>
+public class CompanyTranslationConfiguration : IEntityTypeConfiguration<CompanyTranslation>
 {
-    public void Configure(EntityTypeBuilder<CompanySector> builder)
+    public void Configure(EntityTypeBuilder<CompanyTranslation> b)
     {
-        builder.ToTable("CompanySectors");
-
-        builder.HasKey(cs => new { cs.CompanyId, cs.SectorId });
-
-        builder.HasOne(cs => cs.Company)
-            .WithMany(c => c.Sectors)
-            .HasForeignKey(cs => cs.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(cs => cs.Sector)
-            .WithMany(s => s.Companies)
-            .HasForeignKey(cs => cs.SectorId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasIndex(cs => cs.SectorId);
+        b.HasTimestamps();
+        b.HasIndex(e => new { e.CompanyId, e.LanguageCode }).IsUnique();
+        b.HasIndex(e => e.LanguageCode);
+        b.HasIndex(e => e.CompanyTitle).HasMethod("gin").HasOperators("gin_trgm_ops").HasDatabaseName("ix_company_translations_title_trgm");
+        b.HasOne(e => e.Company).WithMany(c => c.Translations).HasForeignKey(e => e.CompanyId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(e => e.Language).WithMany().HasForeignKey(e => e.LanguageCode).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
-public class CompanyProfileSectionConfiguration : IEntityTypeConfiguration<CompanyProfileSection>
+public class CustomSectionConfiguration : IEntityTypeConfiguration<CustomSection>
 {
-    public void Configure(EntityTypeBuilder<CompanyProfileSection> builder)
+    public void Configure(EntityTypeBuilder<CustomSection> b)
     {
-        builder.ToTable("CompanyProfileSections");
+        b.Property(e => e.SortOrder).HasDefaultValue(0);
+        b.HasTimestamps();
+        b.HasIndex(e => new { e.CompanyProfileId, e.SortOrder });
+        b.HasOne(e => e.Company).WithMany(c => c.CustomSections).HasForeignKey(e => e.CompanyProfileId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
 
-        builder.Property(s => s.Tab).HasMaxLength(80).IsRequired();
-        builder.Property(s => s.Title).HasMaxLength(250).IsRequired();
-        builder.Property(s => s.Description).HasMaxLength(4000);
+public class CustomSectionTranslationConfiguration : IEntityTypeConfiguration<CustomSectionTranslation>
+{
+    public void Configure(EntityTypeBuilder<CustomSectionTranslation> b)
+    {
+        b.HasIndex(e => new { e.CustomSectionId, e.LanguageCode }).IsUnique();
+        b.HasIndex(e => e.LanguageCode);
+        b.HasOne(e => e.CustomSection).WithMany(s => s.Translations).HasForeignKey(e => e.CustomSectionId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(e => e.Language).WithMany().HasForeignKey(e => e.LanguageCode).OnDelete(DeleteBehavior.Restrict);
+    }
+}
 
-        builder.HasIndex(s => new { s.CompanyId, s.SortOrder });
+public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
+{
+    public void Configure(EntityTypeBuilder<UserProfile> b)
+    {
+        b.HasIndex(e => e.Email).IsUnique();
+        b.HasIndex(e => e.ClerkUserId).IsUnique();
+        b.Property(e => e.PreferredLanguage).HasDefaultValue("en");
+        b.Property(e => e.Timezone).HasDefaultValue("Asia/Muscat");
+        b.HasTimestamps();
+
+        b.HasIndex(e => e.CompanyId);
+        b.HasIndex(e => e.PreferredLanguage);
+
+        b.HasOne(e => e.Company).WithMany(c => c.Users).HasForeignKey(e => e.CompanyId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(e => e.PreferredLanguageNavigation).WithMany()
+            .HasForeignKey(e => e.PreferredLanguage).OnDelete(DeleteBehavior.Restrict);
     }
 }

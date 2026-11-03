@@ -24,6 +24,13 @@ In Development, startup applies migrations and seeds languages (en, ar), roles a
 
 In hosting, pass the same values as environment variables: `ConnectionStrings__Default`, `Seed__AdministratorEmail`, `Seed__AdministratorPassword`.
 
+## Languages
+
+English is the default. Arabic switches the whole interface to right-to-left with Arabic text, Arabic month names and the IBM Plex Sans Arabic font. The globe button (or `?lang=ar` / `?lang=en` on any URL) switches language and remembers it in the `munaqasat_lang` cookie; signed-in users can also save it in Settings.
+
+- Interface text: `Services/Localization/UiText.cs` (English key → Arabic)
+- Content (tender titles, company bios, ...): the `*_translations` tables. In Development the Arabic sample content is added by `ArabicSampleContent`.
+
 ## Database
 
 The schema follows the ERD in [`docs/schema.dbml`](docs/schema.dbml) (paste it into dbdiagram.io). Highlights:
@@ -94,7 +101,11 @@ Conventions for anyone changing this codebase.
 - No dead controls. A button that does nothing yet is removed until its feature exists.
 - Every table and list has an empty state.
 - Status pills use the shared classes (`status-open`, `status-closed`, `status-draft`, `status-pending`, `status-accepted`, `status-rejected`) and come from the view model (`Tender.Status`/`StatusClass`, `TenderRequestRow.StatusClass`), not from the view.
-- Everything must work in Arabic (RTL). Use logical CSS (`text-align:start`, `margin-inline-*`) instead of left/right.
+- Everything must work in Arabic (RTL). Use logical CSS (`text-align:start`, `margin-inline-*`, `inset-inline-*`) instead of left/right. RTL-only fixes go in the `[dir="rtl"]` block at the end of `site.css`.
+- Interface text is written in English and wrapped: `@L.T("Save changes")` in views, `_language.T(...)` in services, `t("...")` in `site.js`. Add the Arabic to `Services/Localization/UiText.cs` (or the `AR` table in `site.js`). A missing entry shows in English.
+- Text with values uses placeholders: `@L.T("{0} tenders found", count)`, never string concatenation, because word order differs in Arabic.
+- Form values (`<option value>`, codes, sectors) stay in English; only what the user reads is translated.
+- Wrap ids and numbers that must read left to right in `<span class="mono" dir="ltr">`.
 - Confirm actions with the toast (`showToast`) and show a readable error when a request fails.
 
 ## Not built yet

@@ -46,7 +46,10 @@ public sealed class DatabaseSeeder
         await SeedAdministratorAsync();
 
         if (_config.GetValue("Seed:SampleData", false))
+        {
             await SampleData.SeedAsync(_db, _users, _log);
+            await ArabicSampleContent.SeedAsync(_db, _log);
+        }
 
         _log.LogInformation(
             "Seed complete: {Languages} languages, {Tenders} tenders, {Companies} companies, {Requests} requests, {Ratings} ratings",

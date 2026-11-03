@@ -1,6 +1,36 @@
 (function () {
   "use strict";
 
+  /* ---------------- interface text (Arabic when <html lang="ar">) ---------------- */
+  var AR = {
+    "Copied": "تم النسخ",
+    "Save": "حفظ",
+    "Saved": "محفوظ",
+    "Tender saved": "تم حفظ المناقصة",
+    "Removed from saved": "أزيلت من المحفوظات",
+    "Organization name": "اسم الجهة",
+    "Company name": "اسم الشركة",
+    "Email": "البريد الإلكتروني",
+    "Work email": "البريد الإلكتروني للعمل",
+    "Create your login": "أنشئ بيانات الدخول",
+    "Choose your account type": "اختر نوع الحساب",
+    "Title": "العنوان",
+    "Description": "الوصف",
+    "e.g. Warranty period": "مثال: فترة الضمان",
+    "e.g. Minimum 3 years onsite warranty": "مثال: ضمان في الموقع لمدة 3 سنوات على الأقل",
+    "Remove": "إزالة",
+    "Could not update the request": "تعذر تحديث الطلب",
+    "Updated": "تم التحديث",
+    "ACCEPTED": "مقبول",
+    "REJECTED": "مرفوض",
+    "Request accepted": "تم قبول الطلب",
+    "Request rejected": "تم رفض الطلب"
+  };
+  function t(text) {
+    return (document.documentElement.lang === "ar" && AR[text]) || text;
+  }
+  window.t = t;
+
   /* ---------------- toast ---------------- */
   function showToast(msg) {
     var t = document.getElementById("toast");
@@ -22,16 +52,10 @@
   window.copyText = function (text, btn) {
     var done = function () {
       var old = btn.textContent;
-      btn.textContent = "Copied";
+      btn.textContent = t("Copied");
       setTimeout(function () { btn.textContent = old; }, 1400);
     };
     try { navigator.clipboard.writeText(text).then(done, done); } catch (e) { done(); }
-  };
-
-  /* ---------------- language toggle (marketing nav, cosmetic) ---------------- */
-  window.toggleLang = function () {
-    var label = document.getElementById("langLabel");
-    if (label) label.textContent = label.textContent === "EN" ? "AR" : "EN";
   };
 
   /* ---------------- generic tab groups ----------------
@@ -114,8 +138,8 @@
     saved = !saved;
     btn.setAttribute("data-saved", saved ? "true" : "false");
     btn.querySelector("use").setAttribute("href", saved ? "#i-bookmark-filled" : "#i-bookmark");
-    btn.querySelector(".save-label").textContent = saved ? "Saved" : "Save";
-    showToast(saved ? "Tender saved" : "Removed from saved");
+    btn.querySelector(".save-label").textContent = t(saved ? "Saved" : "Save");
+    showToast(t(saved ? "Tender saved" : "Removed from saved"));
   };
 
   /* ---------------- signup: account type + progressive step ---------------- */
@@ -140,11 +164,11 @@
       if (isIndividual) orgInput.removeAttribute("required");
       else orgInput.setAttribute("required", "");
     }
-    if (orgLabel) orgLabel.textContent = type === "client" ? "Organization name" : "Company name";
+    if (orgLabel) orgLabel.textContent = t(type === "client" ? "Organization name" : "Company name");
 
     var emailLabel = document.getElementById("suEmailLabel");
     var emailInput = document.getElementById("suEmail");
-    if (emailLabel) emailLabel.textContent = isIndividual ? "Email" : "Work email";
+    if (emailLabel) emailLabel.textContent = t(isIndividual ? "Email" : "Work email");
     if (emailInput) emailInput.placeholder = isIndividual ? "you@example.com" : "you@company.om";
   };
   window.goSignupStep2 = function () {
@@ -152,14 +176,14 @@
     document.getElementById("su-step2").hidden = false;
     document.getElementById("su-dot-1").classList.remove("is-active");
     document.getElementById("su-dot-2").classList.add("is-active");
-    document.getElementById("su-step-label").textContent = "Create your login";
+    document.getElementById("su-step-label").textContent = t("Create your login");
   };
   window.goSignupStep1 = function () {
     document.getElementById("su-step1").hidden = false;
     document.getElementById("su-step2").hidden = true;
     document.getElementById("su-dot-1").classList.add("is-active");
     document.getElementById("su-dot-2").classList.remove("is-active");
-    document.getElementById("su-step-label").textContent = "Choose your account type";
+    document.getElementById("su-step-label").textContent = t("Choose your account type");
   };
 
   /* ---------------- tender form: repeatable custom fields ---------------- */
@@ -170,9 +194,9 @@
     var row = document.createElement("div");
     row.className = "cf-row";
     row.innerHTML =
-      '<div class="field"><label class="field-label">Title</label><input type="text" name="CustomFields[' + cfCount + '].Title" placeholder="e.g. Warranty period"></div>' +
-      '<div class="field"><label class="field-label">Description</label><input type="text" name="CustomFields[' + cfCount + '].Description" placeholder="e.g. Minimum 3 years onsite warranty"></div>' +
-      '<button type="button" class="icon-btn btn-icon remove-row-btn" onclick="this.closest(\'.cf-row\').remove()"><svg class="icon"><use href="#i-trash"></use></svg></button>';
+      '<div class="field"><label class="field-label">' + t("Title") + '</label><input type="text" name="CustomFields[' + cfCount + '].Title" placeholder="' + t("e.g. Warranty period") + '"></div>' +
+      '<div class="field"><label class="field-label">' + t("Description") + '</label><input type="text" name="CustomFields[' + cfCount + '].Description" placeholder="' + t("e.g. Minimum 3 years onsite warranty") + '"></div>' +
+      '<button type="button" class="icon-btn btn-icon remove-row-btn" aria-label="' + t("Remove") + '" onclick="this.closest(\'.cf-row\').remove()"><svg class="icon"><use href="#i-trash"></use></svg></button>';
     wrap.appendChild(row);
     cfCount++;
   };
@@ -189,7 +213,7 @@
           if (!res.ok) throw new Error("HTTP " + res.status);
           markStatus(row, status);
         })
-        .catch(function () { showToast("Could not update the request"); });
+        .catch(function () { showToast(t("Could not update the request")); });
       return;
     }
     markStatus(row, status);
@@ -199,9 +223,9 @@
     var statusCell = row.querySelector(".pill-status");
     var classMap = { ACCEPTED: "status-accepted", REJECTED: "status-rejected" };
     statusCell.className = "pill-status " + (classMap[status] || "status-pending");
-    statusCell.textContent = status;
-    row.querySelector(".row-actions").innerHTML = '<span style="color:var(--ink-faint);font-size:12px">Updated</span>';
-    showToast("Request " + status.toLowerCase());
+    statusCell.textContent = t(status);
+    row.querySelector(".row-actions").innerHTML = '<span style="color:var(--ink-faint);font-size:12px">' + t("Updated") + '</span>';
+    showToast(t(status === "ACCEPTED" ? "Request accepted" : "Request rejected"));
   }
 
   /* ---------------- lang tabs on tender form ---------------- */

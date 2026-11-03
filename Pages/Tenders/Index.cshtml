@@ -1,57 +1,57 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Browse tenders";
+    ViewData["Title"] = L.T("Browse tenders");
     ViewData["AppShell"] = true;
     ViewData["ActiveNav"] = "tenders";
 }
 
 <div class="page-head">
-    <div><h1>Browse tenders</h1><p class="sub">Ranked by how closely they match your company profile.</p></div>
-    <div class="page-toolbar"><a class="btn btn-secondary btn-sm" href="/Tenders/Create"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"></use></svg> Post a tender</a></div>
+    <div><h1>@L.T("Browse tenders")</h1><p class="sub">@L.T("Ranked by how closely they match your company profile.")</p></div>
+    <div class="page-toolbar"><a class="btn btn-secondary btn-sm" href="/Tenders/Create"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"></use></svg> @L.T("Post a tender")</a></div>
 </div>
 
 <div class="layout-2col">
     <aside class="filter-card">
         <form method="get" id="filterForm">
             <div class="filter-block">
-                <h4>Category</h4>
-                <label class="check-row"><input type="checkbox" name="Category" value="SUPPLY" onchange="this.form.submit()" checked="@(Model.Category.Contains("SUPPLY") ? "checked" : null)"> Supply</label>
-                <label class="check-row"><input type="checkbox" name="Category" value="SERVICES" onchange="this.form.submit()" checked="@(Model.Category.Contains("SERVICES") ? "checked" : null)"> Services</label>
-                <label class="check-row"><input type="checkbox" name="Category" value="WORKS" onchange="this.form.submit()" checked="@(Model.Category.Contains("WORKS") ? "checked" : null)"> Works</label>
+                <h4>@L.T("Category")</h4>
+                <label class="check-row"><input type="checkbox" name="Category" value="SUPPLY" onchange="this.form.submit()" checked="@(Model.Category.Contains("SUPPLY") ? "checked" : null)"> @L.T("Supply")</label>
+                <label class="check-row"><input type="checkbox" name="Category" value="SERVICES" onchange="this.form.submit()" checked="@(Model.Category.Contains("SERVICES") ? "checked" : null)"> @L.T("Services")</label>
+                <label class="check-row"><input type="checkbox" name="Category" value="WORKS" onchange="this.form.submit()" checked="@(Model.Category.Contains("WORKS") ? "checked" : null)"> @L.T("Works")</label>
             </div>
             <div class="filter-block">
-                <h4>Governorate</h4>
+                <h4>@L.T("Governorate")</h4>
                 <select name="Governorate" onchange="this.form.submit()">
-                    <option value="" selected="@(Model.Governorate == "" ? "selected" : null)">All governorates</option>
-                    <option selected="@(Model.Governorate == "Muscat" ? "selected" : null)">Muscat</option>
-                    <option selected="@(Model.Governorate == "Al Wusta" ? "selected" : null)">Al Wusta</option>
-                    <option selected="@(Model.Governorate == "North Sharqiyah" ? "selected" : null)">North Sharqiyah</option>
-                    <option selected="@(Model.Governorate == "Al Batinah North" ? "selected" : null)">Al Batinah North</option>
+                    <option value="" selected="@(Model.Governorate == "" ? "selected" : null)">@L.T("All governorates")</option>
+                    <option value="Muscat" selected="@(Model.Governorate == "Muscat" ? "selected" : null)">@L.T("Muscat")</option>
+                    <option value="Al Wusta" selected="@(Model.Governorate == "Al Wusta" ? "selected" : null)">@L.T("Al Wusta")</option>
+                    <option value="North Sharqiyah" selected="@(Model.Governorate == "North Sharqiyah" ? "selected" : null)">@L.T("North Sharqiyah")</option>
+                    <option value="Al Batinah North" selected="@(Model.Governorate == "Al Batinah North" ? "selected" : null)">@L.T("Al Batinah North")</option>
                 </select>
             </div>
             <div class="filter-block">
-                <h4>Budget (OMR)</h4>
+                <h4>@L.T("Budget (OMR)")</h4>
                 <select name="Budget" onchange="this.form.submit()">
-                    <option value="" selected="@(Model.Budget == "" ? "selected" : null)">Any budget</option>
-                    <option value="0-100000" selected="@(Model.Budget == "0-100000" ? "selected" : null)">Under 100,000</option>
-                    <option value="100000-500000" selected="@(Model.Budget == "100000-500000" ? "selected" : null)">100,000 &ndash; 500,000</option>
-                    <option value="500000-999999999" selected="@(Model.Budget == "500000-999999999" ? "selected" : null)">Above 500,000</option>
+                    <option value="" selected="@(Model.Budget == "" ? "selected" : null)">@L.T("Any budget")</option>
+                    <option value="0-100000" selected="@(Model.Budget == "0-100000" ? "selected" : null)">@L.T("Under 100,000")</option>
+                    <option value="100000-500000" selected="@(Model.Budget == "100000-500000" ? "selected" : null)">@L.T("100,000 – 500,000")</option>
+                    <option value="500000-999999999" selected="@(Model.Budget == "500000-999999999" ? "selected" : null)">@L.T("Above 500,000")</option>
                 </select>
             </div>
             <div class="filter-block">
-                <h4>Match score</h4>
+                <h4>@L.T("Match score")</h4>
                 <select name="MinScore" onchange="this.form.submit()">
-                    <option value="0" selected="@(Model.MinScore == 0 ? "selected" : null)">Any score</option>
-                    <option value="90" selected="@(Model.MinScore == 90 ? "selected" : null)">90+ strong match</option>
-                    <option value="75" selected="@(Model.MinScore == 75 ? "selected" : null)">75+ good match</option>
+                    <option value="0" selected="@(Model.MinScore == 0 ? "selected" : null)">@L.T("Any score")</option>
+                    <option value="90" selected="@(Model.MinScore == 90 ? "selected" : null)">@L.T("90+ strong match")</option>
+                    <option value="75" selected="@(Model.MinScore == 75 ? "selected" : null)">@L.T("75+ good match")</option>
                 </select>
             </div>
         </form>
     </aside>
     <div>
         <div class="results-bar">
-            <span class="results-count">@Model.Results.Count @(Model.Results.Count == 1 ? "tender" : "tenders") found</span>
+            <span class="results-count">@(Model.Results.Count == 1 ? L.T("1 tender found") : L.T("{0} tenders found", Model.Results.Count))</span>
             <form method="get">
                 @foreach (var c in Model.Category)
                 {
@@ -61,16 +61,16 @@
                 <input type="hidden" name="Budget" value="@Model.Budget" />
                 <input type="hidden" name="MinScore" value="@Model.MinScore" />
                 <select class="sort-select" name="Sort" onchange="this.form.submit()">
-                    <option value="score" selected="@(Model.Sort == "score" ? "selected" : null)">Sort: Best match</option>
-                    <option value="closing" selected="@(Model.Sort == "closing" ? "selected" : null)">Sort: Closing soon</option>
-                    <option value="newest" selected="@(Model.Sort == "newest" ? "selected" : null)">Sort: Newest</option>
+                    <option value="score" selected="@(Model.Sort == "score" ? "selected" : null)">@L.T("Sort: Best match")</option>
+                    <option value="closing" selected="@(Model.Sort == "closing" ? "selected" : null)">@L.T("Sort: Closing soon")</option>
+                    <option value="newest" selected="@(Model.Sort == "newest" ? "selected" : null)">@L.T("Sort: Newest")</option>
                 </select>
             </form>
         </div>
         <div class="tender-grid">
             @if (Model.Results.Count == 0)
             {
-                <div class="empty-state"><svg class="icon" style="width:40px;height:40px"><use href="#i-search"></use></svg><p>No tenders match these filters.</p></div>
+                <div class="empty-state"><svg class="icon" style="width:40px;height:40px"><use href="#i-search"></use></svg><p>@L.T("No tenders match these filters.")</p></div>
             }
             else
             {

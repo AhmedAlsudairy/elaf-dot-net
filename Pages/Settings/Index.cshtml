@@ -1,7 +1,7 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Settings";
+    ViewData["Title"] = L.T("Settings");
     ViewData["AppShell"] = true;
     ViewData["ActiveNav"] = "settings";
     var v = Model.View!;
@@ -11,48 +11,48 @@
     var timezones = new Dictionary<string, string> { ["Asia/Muscat"] = "Asia/Muscat (GMT+4)", ["Asia/Dubai"] = "Asia/Dubai (GMT+4)", ["UTC"] = "UTC" };
 }
 
-<div class="page-head"><div><h1>Settings</h1><p class="sub">Manage your profile, company and platform preferences.</p></div></div>
+<div class="page-head"><div><h1>@L.T("Settings")</h1><p class="sub">@L.T("Manage your profile, company and platform preferences.")</p></div></div>
 <div class="settings-layout">
     <nav class="settings-nav">
-        <div class="side-link is-active" data-tab-group="settings" data-tab-value="profile"><svg class="icon"><use href="#i-user"></use></svg> Profile</div>
-        <div class="side-link" data-tab-group="settings" data-tab-value="company"><svg class="icon"><use href="#i-building"></use></svg> Company</div>
-        <div class="side-link" data-tab-group="settings" data-tab-value="notifications"><svg class="icon"><use href="#i-bell"></use></svg> Notifications</div>
-        <div class="side-link" data-tab-group="settings" data-tab-value="language"><svg class="icon"><use href="#i-globe"></use></svg> Language &amp; region</div>
-        <div class="side-link" data-tab-group="settings" data-tab-value="billing"><svg class="icon"><use href="#i-shield"></use></svg> Billing &amp; plan</div>
-        <div class="side-link" data-tab-group="settings" data-tab-value="security"><svg class="icon"><use href="#i-settings"></use></svg> Security</div>
+        <div class="side-link is-active" data-tab-group="settings" data-tab-value="profile"><svg class="icon"><use href="#i-user"></use></svg> @L.T("Profile")</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="company"><svg class="icon"><use href="#i-building"></use></svg> @L.T("Company")</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="notifications"><svg class="icon"><use href="#i-bell"></use></svg> @L.T("Notifications")</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="language"><svg class="icon"><use href="#i-globe"></use></svg> @L.T("Language & region")</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="billing"><svg class="icon"><use href="#i-shield"></use></svg> @L.T("Billing & plan")</div>
+        <div class="side-link" data-tab-group="settings" data-tab-value="security"><svg class="icon"><use href="#i-settings"></use></svg> @L.T("Security")</div>
     </nav>
 
     <div class="settings-panel">
         <div data-tab-panel="settings" data-tab-value="profile">
-            <h2>Profile</h2><p class="desc">This information appears on requests and messages you send.</p>
+            <h2>@L.T("Profile")</h2><p class="desc">@L.T("This information appears on requests and messages you send.")</p>
             <form method="post" asp-page-handler="Save">
                 <input type="hidden" name="section" value="profile" />
                 <div class="form-section">
                     <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px">
                         <div class="avatar avatar-lg">@initials</div>
-                        <button type="button" class="btn btn-secondary btn-sm"><svg class="icon" style="width:15px;height:15px"><use href="#i-upload"></use></svg> Upload photo</button>
+                        <button type="button" class="btn btn-secondary btn-sm"><svg class="icon" style="width:15px;height:15px"><use href="#i-upload"></use></svg> @L.T("Upload photo")</button>
                     </div>
                     <div class="field-stack">
                         <div class="field-row">
-                            <div class="field"><label class="field-label" for="pName">Full name</label><input id="pName" name="name" type="text" value="@p.Name" required></div>
-                            <div class="field"><label class="field-label" for="pEmail">Email</label><input id="pEmail" name="email" type="email" value="@p.Email" required></div>
+                            <div class="field"><label class="field-label" for="pName">@L.T("Full name")</label><input id="pName" name="name" type="text" value="@p.Name" required></div>
+                            <div class="field"><label class="field-label" for="pEmail">@L.T("Email")</label><input id="pEmail" name="email" type="email" value="@p.Email" required></div>
                         </div>
                         <div class="field-row">
-                            <div class="field"><label class="field-label" for="pPhone">Phone</label><input id="pPhone" name="phone" type="tel" value="@p.PhoneNumber"></div>
-                            <div class="field"><label class="field-label" for="pTz">Timezone</label><select id="pTz" name="timezone">@foreach (var tz in timezones) { <option value="@tz.Key" selected="@(p.Timezone == tz.Key)">@tz.Value</option> }</select></div>
+                            <div class="field"><label class="field-label" for="pPhone">@L.T("Phone")</label><input id="pPhone" name="phone" type="tel" value="@p.PhoneNumber"></div>
+                            <div class="field"><label class="field-label" for="pTz">@L.T("Timezone")</label><select id="pTz" name="timezone">@foreach (var tz in timezones) { <option value="@tz.Key" selected="@(p.Timezone == tz.Key)">@tz.Value</option> }</select></div>
                         </div>
-                        <div class="field"><label class="field-label" for="pBio">Bio</label><textarea id="pBio" name="bio">@p.Bio</textarea></div>
+                        <div class="field"><label class="field-label" for="pBio">@L.T("Bio")</label><textarea id="pBio" name="bio">@p.Bio</textarea></div>
                     </div>
                 </div>
-                <div class="form-actions"><a class="btn btn-secondary" href="/Settings">Cancel</a><button class="btn btn-primary" type="submit">Save changes</button></div>
+                <div class="form-actions"><a class="btn btn-secondary" href="/Settings">@L.T("Cancel")</a><button class="btn btn-primary" type="submit">@L.T("Save changes")</button></div>
             </form>
         </div>
 
         <div data-tab-panel="settings" data-tab-value="company" hidden>
-            <h2>Company</h2><p class="desc">Shown on your public company profile and tender requests.</p>
+            <h2>@L.T("Company")</h2><p class="desc">@L.T("Shown on your public company profile and tender requests.")</p>
             @if (v.Company is null)
             {
-                <p class="desc">Your account is not linked to a company. Sign up as a client organization or contractor to manage a company profile.</p>
+                <p class="desc">@L.T("Your account is not linked to a company. Sign up as a client organization or contractor to manage a company profile.")</p>
             }
             else
             {
@@ -60,45 +60,45 @@
                 <input type="hidden" name="section" value="company" />
                 <div class="field-stack">
                     <div class="field-row">
-                        <div class="field"><label class="field-label" for="scTitle">Company name</label><input id="scTitle" name="companyTitle" type="text" value="@v.CompanyTitle" required></div>
-                        <div class="field"><label class="field-label" for="scWebsite">Website</label><input id="scWebsite" name="website" type="url" value="@v.Company?.CompanyWebsite"></div>
+                        <div class="field"><label class="field-label" for="scTitle">@L.T("Company name")</label><input id="scTitle" name="companyTitle" type="text" value="@v.CompanyTitle" required></div>
+                        <div class="field"><label class="field-label" for="scWebsite">@L.T("Website")</label><input id="scWebsite" name="website" type="url" value="@v.Company?.CompanyWebsite"></div>
                     </div>
-                    <div class="field"><label class="field-label" for="scAddress">Address</label><input id="scAddress" name="address" type="text" value="@v.CompanyAddress"></div>
-                    <div class="field"><label class="field-label">Sectors</label><div class="co-tags" style="margin-bottom:8px">@foreach (var sector in sectors) { <span class="tag tag-blue">@sector</span> }</div><input id="scSectors" name="sectors" type="text" value="@string.Join(", ", sectors)" placeholder="Comma separated, e.g. Technology, Networking"></div>
-                    <div class="field"><label class="field-label" for="scBio">Company bio</label><textarea id="scBio" name="companyBio">@v.CompanyBio</textarea></div>
+                    <div class="field"><label class="field-label" for="scAddress">@L.T("Address")</label><input id="scAddress" name="address" type="text" value="@v.CompanyAddress"></div>
+                    <div class="field"><label class="field-label">@L.T("Sectors")</label><div class="co-tags" style="margin-bottom:8px">@foreach (var sector in sectors) { <span class="tag tag-blue">@L.T(sector)</span> }</div><input id="scSectors" name="sectors" type="text" value="@string.Join(", ", sectors)" placeholder="@L.T("Comma separated, e.g. Technology, Networking")"></div>
+                    <div class="field"><label class="field-label" for="scBio">@L.T("Company bio")</label><textarea id="scBio" name="companyBio">@v.CompanyBio</textarea></div>
                 </div>
-                <div class="form-actions"><a class="btn btn-secondary" href="/Settings">Cancel</a><button class="btn btn-primary" type="submit">Save changes</button></div>
+                <div class="form-actions"><a class="btn btn-secondary" href="/Settings">@L.T("Cancel")</a><button class="btn btn-primary" type="submit">@L.T("Save changes")</button></div>
             </form>
             }
         </div>
 
         <div data-tab-panel="settings" data-tab-value="notifications" hidden>
-            <h2>Notifications</h2><p class="desc">Choose what Munaqasat should email and notify you about.</p>
-            <div class="notif-row"><div><strong>New matching tenders</strong><span>A tender is published that matches your sectors</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
-            <div class="notif-row"><div><strong>Deadline reminders</strong><span>Document sale and bid submission closing soon</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
-            <div class="notif-row"><div><strong>Request status updates</strong><span>A request you submitted is accepted or rejected</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
-            <div class="notif-row"><div><strong>New messages</strong><span>Someone messages you about a tender</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
-            <div class="notif-row"><div><strong>Product updates</strong><span>Occasional news about new features</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
+            <h2>@L.T("Notifications")</h2><p class="desc">@L.T("Choose what Munaqasat should email and notify you about.")</p>
+            <div class="notif-row"><div><strong>@L.T("New matching tenders")</strong><span>@L.T("A tender is published that matches your sectors")</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>@L.T("Deadline reminders")</strong><span>@L.T("Document sale and bid submission closing soon")</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>@L.T("Request status updates")</strong><span>@L.T("A request you submitted is accepted or rejected")</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>@L.T("New messages")</strong><span>@L.T("Someone messages you about a tender")</span></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="notif-row"><div><strong>@L.T("Product updates")</strong><span>@L.T("Occasional news about new features")</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
         </div>
 
         <div data-tab-panel="settings" data-tab-value="language" hidden>
-            <h2>Language &amp; region</h2><p class="desc">Tender pages, forms and notifications follow this language, including right-to-left layout for Arabic.</p>
+            <h2>@L.T("Language & region")</h2><p class="desc">@L.T("Tender pages, forms and notifications follow this language, including right-to-left layout for Arabic.")</p>
             <form method="post" asp-page-handler="Save">
                 <input type="hidden" name="section" value="language" />
                 <div class="field-stack">
-                    <input type="hidden" id="setLang" name="language" value="@p.PreferredLanguage" /><div class="lang-card @(p.PreferredLanguage == "en" ? "is-active" : "")" data-lang="en" onclick="pickLangCard(this)"><span class="flag">EN</span><div><strong>English</strong><div style="font-size:12px;color:var(--ink-soft)">Left-to-right</div></div></div>
-                    <div class="lang-card @(p.PreferredLanguage == "ar" ? "is-active" : "")" data-lang="ar" onclick="pickLangCard(this)"><span class="flag">ع</span><div><strong>العربية (Arabic)</strong><div style="font-size:12px;color:var(--ink-soft)">Right-to-left</div></div></div>
-                    <div class="field" style="max-width:320px"><label class="field-label" for="setTz">Timezone</label><select id="setTz" name="timezone">@foreach (var tz in timezones) { <option value="@tz.Key" selected="@(p.Timezone == tz.Key)">@tz.Value</option> }</select></div>
+                    <input type="hidden" id="setLang" name="language" value="@p.PreferredLanguage" /><div class="lang-card @(p.PreferredLanguage == "en" ? "is-active" : "")" data-lang="en" onclick="pickLangCard(this)"><span class="flag">@L.T("EN")</span><div><strong>@L.T("English")</strong><div style="font-size:12px;color:var(--ink-soft)">@L.T("Left-to-right")</div></div></div>
+                    <div class="lang-card @(p.PreferredLanguage == "ar" ? "is-active" : "")" data-lang="ar" onclick="pickLangCard(this)"><span class="flag">ع</span><div><strong>@L.T("العربية (Arabic)")</strong><div style="font-size:12px;color:var(--ink-soft)">@L.T("Right-to-left")</div></div></div>
+                    <div class="field" style="max-width:320px"><label class="field-label" for="setTz">@L.T("Timezone")</label><select id="setTz" name="timezone">@foreach (var tz in timezones) { <option value="@tz.Key" selected="@(p.Timezone == tz.Key)">@tz.Value</option> }</select></div>
                 </div>
-                <div class="form-actions"><button class="btn btn-primary" type="submit">Save changes</button></div>
+                <div class="form-actions"><button class="btn btn-primary" type="submit">@L.T("Save changes")</button></div>
             </form>
         </div>
 
         <div data-tab-panel="settings" data-tab-value="billing" hidden>
-            <h2>Billing &amp; plan</h2><p class="desc">Manage your subscription and payment details.</p>
+            <h2>@L.T("Billing & plan")</h2><p class="desc">@L.T("Manage your subscription and payment details.")</p>
             <div class="plan-current">
-                <div><span class="badge badge-popular" style="margin-bottom:8px">Current plan</span><h3 style="font-size:16px">Professional &mdash; OMR 29/mo</h3><p style="font-size:12.5px;color:var(--ink-soft)">Renews on 15 October 2026</p></div>
-                <button type="button" class="btn btn-secondary btn-sm">Manage payment method</button>
+                <div><span class="badge badge-popular" style="margin-bottom:8px">@L.T("Current plan")</span><h3 style="font-size:16px">@L.T("Professional — OMR 29/mo")</h3><p style="font-size:12.5px;color:var(--ink-soft)">@L.T("Renews on 15 October 2026")</p></div>
+                <button type="button" class="btn btn-secondary btn-sm">@L.T("Manage payment method")</button>
             </div>
             <div class="tier-grid">
                 @foreach (var tier in Model.Tiers)
@@ -109,17 +109,17 @@
         </div>
 
         <div data-tab-panel="settings" data-tab-value="security" hidden>
-            <h2>Security</h2><p class="desc">Keep your account protected.</p>
+            <h2>@L.T("Security")</h2><p class="desc">@L.T("Keep your account protected.")</p>
             <form method="post" asp-page-handler="Save">
                 <input type="hidden" name="section" value="security" />
                 <div class="form-section">
                     <div class="field-row">
-                        <div class="field"><label class="field-label" for="secPass1">New password</label><input id="secPass1" name="newPassword" type="password" autocomplete="new-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
-                        <div class="field"><label class="field-label" for="secPass2">Confirm new password</label><input id="secPass2" name="confirmPassword" type="password" autocomplete="new-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+                        <div class="field"><label class="field-label" for="secPass1">@L.T("New password")</label><input id="secPass1" name="newPassword" type="password" autocomplete="new-password" placeholder="@L.T("••••••••")"></div>
+                        <div class="field"><label class="field-label" for="secPass2">@L.T("Confirm new password")</label><input id="secPass2" name="confirmPassword" type="password" autocomplete="new-password" placeholder="@L.T("••••••••")"></div>
                     </div>
                 </div>
-                <div class="notif-row"><div><strong>Two-factor authentication</strong><span>Require a code in addition to your password</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
-                <div class="form-actions"><button class="btn btn-primary" type="submit">Update security</button></div>
+                <div class="notif-row"><div><strong>@L.T("Two-factor authentication")</strong><span>@L.T("Require a code in addition to your password")</span></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
+                <div class="form-actions"><button class="btn btn-primary" type="submit">@L.T("Update security")</button></div>
             </form>
         </div>
     </div>

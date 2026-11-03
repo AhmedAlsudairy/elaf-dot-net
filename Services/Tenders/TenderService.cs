@@ -163,7 +163,7 @@ public sealed class TenderService : ITenderService
 
         var externalId = string.IsNullOrWhiteSpace(input.ExtId) ? $"LOCAL-{Ids.New()[..8].ToUpperInvariant()}" : input.ExtId.Trim();
         if (await _db.Tenders.AnyAsync(t => t.ExternalTenderId == externalId))
-            return OperationResult<string>.Failure($"A tender with external ID {externalId} already exists");
+            return OperationResult<string>.Failure(_language.T("A tender with external ID {0} already exists", externalId));
 
         var lang = _language.Code;
         var tender = new TenderEntity
@@ -265,7 +265,7 @@ public sealed class TenderService : ITenderService
         var lang = _language.Code;
         var tr = Translations.Pick(t.Translations, lang, t.OriginalLanguage);
         var categoryLabel = tr?.ProcurementSubCategory ?? tr?.ProcurementCategory
-            ?? CultureInfo.InvariantCulture.TextInfo.ToTitleCase(t.ProcurementCategoryCode.ToLowerInvariant());
+            ?? _language.T(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(t.ProcurementCategoryCode.ToLowerInvariant()));
 
         var view = new TenderView
         {
@@ -283,8 +283,8 @@ public sealed class TenderService : ITenderService
             BudgetLabel = BudgetLabel(t.BudgetMin, t.BudgetMax),
             Published = t.PublishedDate,
             Closing = ToOmanDate(t.BidSubmissionClosing),
-            DocFee = t.DocumentFee is { } fee ? $"OMR {fee.ToString("0.000", CultureInfo.InvariantCulture)}" : "None",
-            Bond = t.BondPercentage is { } bond ? $"{bond.ToString("0.0", CultureInfo.InvariantCulture)}% of quoted value" : "Not required",
+            DocFee = t.DocumentFee is { } fee ? _language.T("OMR {0}", fee.ToString("0.000", CultureInfo.InvariantCulture)) : _language.T("None"),
+            Bond = t.BondPercentage is { } bond ? _language.T("{0}% of quoted value", bond.ToString("0.0", CultureInfo.InvariantCulture)) : _language.T("Not required"),
             Status = t.Status != TenderStatuses.Published ? "Draft"
                 : t.BidSubmissionClosing < _clock.UtcNow ? "Closed" : "Open",
             IsNew = _clock.Today.DayNumber - t.PublishedDate.DayNumber <= NewWindow.Days,
@@ -319,15 +319,15 @@ public sealed class TenderService : ITenderService
         return new TenderMatcher(company.Sectors ?? new List<string>(), addresses!);
     }
 
-    private static string BudgetLabel(decimal? min, decimal? max)
+    private string BudgetLabel(decimal? min, decimal? max)
     {
-        if (min is null && max is null) return "Budget not disclosed";
-        if (min is { } lo && max is { } hi) return $"OMR {Short(lo)}–{Short(hi)}";
-        return $"OMR {Short((min ?? max)!.Value)}";
+        if (min is null && max is null) return _language.T("Budget not disclosed");
+        if (min is { } lo && max is { } hi) return _language.T("OMR {0}", $"{Short(lo)}–{Short(hi)}");
+        return _language.T("OMR {0}", Short((min ?? max)!.Value));
 
-        static string Short(decimal v) => v >= 1_000_000
-            ? (v / 1_000_000m).ToString("0.#", CultureInfo.InvariantCulture) + "M"
-            : v >= 1_000 ? (v / 1_000m).ToString("0.#", CultureInfo.InvariantCulture) + "K"
+        string Short(decimal v) => v >= 1_000_000
+            ? (v / 1_000_000m).ToString("0.#", CultureInfo.InvariantCulture) + _language.T("M")
+            : v >= 1_000 ? (v / 1_000m).ToString("0.#", CultureInfo.InvariantCulture) + _language.T("K")
             : v.ToString("0", CultureInfo.InvariantCulture);
     }
 

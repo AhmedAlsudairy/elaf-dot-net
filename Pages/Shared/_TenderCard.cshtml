@@ -13,20 +13,20 @@
             <h3><a href="/Tenders/Details/@Model.Id" style="color:inherit">@Model.Title</a></h3>
             @if (Model.IsNew)
             {
-                <span class="badge badge-new">New</span>
+                <span class="badge badge-new">@L.T("New")</span>
             }
         </div>
-        <div class="tcard-entity">@Model.Entity &middot; <span class="mono">@Model.TenderNo</span></div>
+        <div class="tcard-entity">@Model.Entity &middot; <span class="mono" dir="ltr">@Model.TenderNo</span></div>
         <div class="tcard-tags">
             <span class="tag @Model.CategoryTagClass">@Model.CategoryLabel</span>
             <span class="tag tag-green">@Model.BudgetLabel</span>
-            <span class="tcard-due"><svg class="icon" style="width:14px;height:14px"><use href="#i-clock"></use></svg> Due @Model.Closing.ToString("d MMM yyyy")</span>
+            <span class="tcard-due"><svg class="icon" style="width:14px;height:14px"><use href="#i-clock"></use></svg> @L.T("Due {0}", Model.Closing.ToString("d MMM yyyy"))</span>
         </div>
         <div class="tcard-actions">
-            <a class="btn btn-primary btn-sm" href="/Tenders/Details/@Model.Id">View details</a>
+            <a class="btn btn-primary btn-sm" href="/Tenders/Details/@Model.Id">@L.T("View details")</a>
             <button type="button" class="btn btn-ghost btn-sm" data-saved="false" onclick="toggleSave(event, this)">
                 <svg class="icon" style="width:14px;height:14px"><use href="#i-bookmark"></use></svg>
-                <span class="save-label">Save</span>
+                <span class="save-label">@L.T("Save")</span>
             </button>
         </div>
     </div>
@@ -38,6 +38,6 @@
             </svg>
             <span class="ring-num">@Model.Score</span>
         </div>
-        <span class="tcard-score-label">Match</span>
+        <span class="tcard-score-label">@L.T("Match")</span>
     </div>
 </article>

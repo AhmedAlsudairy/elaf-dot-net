@@ -1,5 +1,6 @@
 using Munaqasat.Web.Infrastructure;
 using Munaqasat.Web.Infrastructure.Persistence.Seed;
+using Munaqasat.Web.Services.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,23 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ?lang=ar|en switches the interface language and is remembered in a cookie.
+// The request culture follows it, so dates show Arabic month names in Arabic.
+app.Use(async (context, next) =>
+{
+    var requested = context.Request.Query["lang"].ToString();
+    if (RequestLanguage.Supported.Contains(requested))
+    {
+        context.Response.Cookies.Append(RequestLanguage.CookieName, requested,
+            new CookieOptions { MaxAge = TimeSpan.FromDays(365), IsEssential = true, SameSite = SameSiteMode.Lax });
+    }
+
+    var culture = RequestLanguage.Culture(context.RequestServices.GetRequiredService<IRequestLanguage>().Code);
+    System.Globalization.CultureInfo.CurrentCulture = culture;
+    System.Globalization.CultureInfo.CurrentUICulture = culture;
+    await next();
+});
 
 app.MapRazorPages();
 

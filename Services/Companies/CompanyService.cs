@@ -85,7 +85,7 @@ public sealed class CompanyService : ICompanyService
                 .ToList(),
             Reviews = ratings.Select(r => new ReviewView
             {
-                By = r.Anonymous ? "Anonymous" : Translations.Pick(r.RaterTranslations, lang, r.RaterDefault)?.CompanyTitle ?? "Company",
+                By = r.Anonymous ? _language.T("Anonymous") : Translations.Pick(r.RaterTranslations, lang, r.RaterDefault)?.CompanyTitle ?? _language.T("Company"),
                 Date = DateOnly.FromDateTime(r.CreatedAt.ToOffset(SystemClock.OmanOffset).DateTime),
                 Quality = r.Quality,
                 Communication = r.Communication,

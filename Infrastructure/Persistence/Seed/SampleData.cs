@@ -9,6 +9,7 @@ namespace Munaqasat.Web.Infrastructure.Persistence.Seed;
 /// <summary>
 /// The sample content the frontend was designed with (formerly Data/MockData.cs), stored in the ERD tables.
 /// Development only: enabled by <c>Seed:SampleData</c>. Skipped if tender "t1" already exists.
+/// The Arabic versions are added by <see cref="ArabicSampleContent"/>.
 /// </summary>
 internal static class SampleData
 {
@@ -160,20 +161,6 @@ internal static class SampleData
             db.Tenders.Add(tender);
         }
 
-        // One Arabic translation so the fallback rule (requested → record default → en) is visible with ?lang=ar.
-        db.Tenders.Local.First(t => t.Id == "t1").Translations.Add(new TenderTranslation
-        {
-            LanguageCode = "ar",
-            EntityName = "وزارة النقل والاتصالات وتقنية المعلومات",
-            Title = "توريد وتركيب معدات البنية التحتية للشبكات",
-            ProcurementCategory = "توريد",
-            ProcurementSubCategory = "التقنية",
-            Governorate = "مسقط",
-            Wilayat = "بوشر",
-            Note = "شراء وتوريد وتركيب معدات الشبكات الأساسية وطبقة الوصول في ثلاثة مراكز بيانات إقليمية، بما في ذلك عقد صيانة في الموقع لمدة 3 سنوات وتدريب الموظفين.",
-            IsMachineTranslated = true
-        });
-
         foreach (var s in Companies)
         {
             var company = new Company
@@ -197,14 +184,6 @@ internal static class SampleData
 
             db.Companies.Add(company);
         }
-
-        db.Companies.Local.First(c => c.Id == "c1").Translations.Add(new CompanyTranslation
-        {
-            LanguageCode = "ar",
-            CompanyTitle = "الخليج لتكامل الأنظمة ش.م.م",
-            Address = "الخوير، مسقط، عُمان",
-            Bio = "تنفذ شركة الخليج لتكامل الأنظمة مشاريع الشبكات والحوسبة السحابية وتكامل الأنظمة للجهات الحكومية والخاصة في عُمان منذ عام 2011."
-        });
 
         foreach (var r in Requests)
         {

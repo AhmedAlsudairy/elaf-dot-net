@@ -3,24 +3,24 @@
 <div class="tier @(Model.Highlight ? "tier--highlight" : "")">
     @if (Model.Highlight)
     {
-        <span class="badge badge-popular tier-badge">Most popular</span>
+        <span class="badge badge-popular tier-badge">@L.T("Most popular")</span>
     }
     <div>
-        <div class="tier-name">@Model.Name</div>
-        <div class="tier-desc">@Model.Desc</div>
+        <div class="tier-name">@L.T(Model.Name)</div>
+        <div class="tier-desc">@L.T(Model.Desc)</div>
     </div>
     <div class="tier-price">
-        <strong>@(Model.Price == "Custom" ? "Custom" : "OMR " + Model.Price)</strong>
+        <strong>@(Model.Price == "Custom" ? L.T("Custom") : L.T("OMR {0}", Model.Price))</strong>
         @if (Model.Price != "Custom")
         {
-            <span>/ month</span>
+            <span>@L.T("/ month")</span>
         }
     </div>
     <ul class="tier-feats">
         @foreach (var f in Model.Features)
         {
-            <li><svg class="icon"><use href="#i-check"></use></svg>@f</li>
+            <li><svg class="icon"><use href="#i-check"></use></svg>@L.T(f)</li>
         }
     </ul>
-    <a class="btn @(Model.Highlight ? "btn-primary" : "btn-secondary") btn-block" href="/Account/SignUp">@Model.Cta</a>
+    <a class="btn @(Model.Highlight ? "btn-primary" : "btn-secondary") btn-block" href="/Account/SignUp">@L.T(Model.Cta)</a>
 </div>

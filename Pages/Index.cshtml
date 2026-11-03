@@ -1,7 +1,7 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = L.T("Home");
     ViewData["AppShell"] = false;
     ViewData["ActiveNav"] = "landing";
 }
@@ -9,18 +9,18 @@
 <main class="m-main">
     <div class="hero">
         <div>
-            <span class="eyebrow"><svg class="icon" style="width:14px;height:14px"><use href="#i-shield"></use></svg> Trusted by 18 government entities in Oman</span>
-            <h1>Tenders and the companies ready to bid them, matched in one place.</h1>
-            <p class="lead">Munaqasat brings government and private-sector tenders, verified company profiles, and structured bidding into a single bilingual workspace &mdash; built for how procurement actually works in Oman.</p>
+            <span class="eyebrow"><svg class="icon" style="width:14px;height:14px"><use href="#i-shield"></use></svg> @L.T("Trusted by 18 government entities in Oman")</span>
+            <h1>@L.T("Tenders and the companies ready to bid them, matched in one place.")</h1>
+            <p class="lead">@L.T("Munaqasat brings government and private-sector tenders, verified company profiles, and structured bidding into a single bilingual workspace — built for how procurement actually works in Oman.")</p>
             <div class="hero-cta">
-                <a class="btn btn-primary" href="/Tenders">Browse open tenders <svg class="icon" style="width:15px;height:15px"><use href="#i-arrow-right"></use></svg></a>
-                <a class="btn btn-secondary" href="/Account/SignUp">List your company</a>
+                <a class="btn btn-primary" href="/Tenders">@L.T("Browse open tenders") <svg class="icon" style="width:15px;height:15px"><use href="#i-arrow-right"></use></svg></a>
+                <a class="btn btn-secondary" href="/Account/SignUp">@L.T("List your company")</a>
             </div>
             <div class="stat-strip">
-                <div><svg class="icon"><use href="#i-grid"></use></svg><strong>1,240</strong><span>Open tenders</span></div>
-                <div><svg class="icon"><use href="#i-building"></use></svg><strong>3,800</strong><span>Verified companies</span></div>
-                <div><svg class="icon"><use href="#i-shield"></use></svg><strong>OMR 480M</strong><span>Active tender value</span></div>
-                <div><svg class="icon"><use href="#i-briefcase"></use></svg><strong>18</strong><span>Government entities</span></div>
+                <div><svg class="icon"><use href="#i-grid"></use></svg><strong>1,240</strong><span>@L.T("Open tenders")</span></div>
+                <div><svg class="icon"><use href="#i-building"></use></svg><strong>3,800</strong><span>@L.T("Verified companies")</span></div>
+                <div><svg class="icon"><use href="#i-shield"></use></svg><strong>@L.T("OMR 480M")</strong><span>@L.T("Active tender value")</span></div>
+                <div><svg class="icon"><use href="#i-briefcase"></use></svg><strong>18</strong><span>@L.T("Government entities")</span></div>
             </div>
         </div>
         <div class="hero-stack">
@@ -33,46 +33,46 @@
 
     <div class="section section-band" id="how">
         <div class="section-head">
-            <span class="eyebrow">How it works</span>
-            <h2>One workspace, two sides of the same tender.</h2>
-            <p>Whichever side of a tender you're on, the process from listing to award is the same three steps.</p>
+            <span class="eyebrow">@L.T("How it works")</span>
+            <h2>@L.T("One workspace, two sides of the same tender.")</h2>
+            <p>@L.T("Whichever side of a tender you're on, the process from listing to award is the same three steps.")</p>
         </div>
         <div class="how-grid">
             <div class="how-col">
-                <h3>For organizations issuing tenders</h3>
-                <p class="sub">Post a tender, review structured bids, award with confidence.</p>
-                <div class="how-step"><span class="how-num">1</span><div><h4>Publish the tender</h4><p>Fill in scope, dates, bond and fee terms &mdash; in English and Arabic.</p></div></div>
-                <div class="how-step"><span class="how-num">2</span><div><h4>Review qualified requests</h4><p>Compare pricing, delivery days and company ratings side by side.</p></div></div>
-                <div class="how-step"><span class="how-num">3</span><div><h4>Award and message</h4><p>Accept a bid and continue the conversation in-platform.</p></div></div>
+                <h3>@L.T("For organizations issuing tenders")</h3>
+                <p class="sub">@L.T("Post a tender, review structured bids, award with confidence.")</p>
+                <div class="how-step"><span class="how-num">1</span><div><h4>@L.T("Publish the tender")</h4><p>@L.T("Fill in scope, dates, bond and fee terms — in English and Arabic.")</p></div></div>
+                <div class="how-step"><span class="how-num">2</span><div><h4>@L.T("Review qualified requests")</h4><p>@L.T("Compare pricing, delivery days and company ratings side by side.")</p></div></div>
+                <div class="how-step"><span class="how-num">3</span><div><h4>@L.T("Award and message")</h4><p>@L.T("Accept a bid and continue the conversation in-platform.")</p></div></div>
             </div>
             <div class="how-col">
-                <h3>For contractors &amp; suppliers</h3>
-                <p class="sub">Find relevant tenders and submit a competitive request in minutes.</p>
-                <div class="how-step"><span class="how-num">1</span><div><h4>Build your company profile</h4><p>Sectors, grades, past work &mdash; the things a buyer checks first.</p></div></div>
-                <div class="how-step"><span class="how-num">2</span><div><h4>Get matched to tenders</h4><p>A match score ranks tenders against your sectors and grade.</p></div></div>
-                <div class="how-step"><span class="how-num">3</span><div><h4>Submit price &amp; delivery</h4><p>One request per tender, tracked until it's accepted or closed.</p></div></div>
+                <h3>@L.T("For contractors & suppliers")</h3>
+                <p class="sub">@L.T("Find relevant tenders and submit a competitive request in minutes.")</p>
+                <div class="how-step"><span class="how-num">1</span><div><h4>@L.T("Build your company profile")</h4><p>@L.T("Sectors, grades, past work — the things a buyer checks first.")</p></div></div>
+                <div class="how-step"><span class="how-num">2</span><div><h4>@L.T("Get matched to tenders")</h4><p>@L.T("A match score ranks tenders against your sectors and grade.")</p></div></div>
+                <div class="how-step"><span class="how-num">3</span><div><h4>@L.T("Submit price & delivery")</h4><p>@L.T("One request per tender, tracked until it's accepted or closed.")</p></div></div>
             </div>
         </div>
     </div>
 
     <div class="section" id="features">
         <div class="section-head">
-            <span class="eyebrow">Platform</span>
-            <h2>Built for procurement, not retrofitted from a job board.</h2>
+            <span class="eyebrow">@L.T("Platform")</span>
+            <h2>@L.T("Built for procurement, not retrofitted from a job board.")</h2>
         </div>
         <div class="feat-grid">
-            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-shield"></use></svg></div><h3>Verified profiles &amp; ratings</h3><p>Every company is rated on quality, communication, experience and deadlines after each closed request.</p></div>
-            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-globe"></use></svg></div><h3>Bilingual by design</h3><p>Every tender, field and notification exists in English and Arabic, with full right-to-left support.</p></div>
-            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-message"></use></svg></div><h3>Structured requests &amp; chat</h3><p>Bids carry price, delivery days and status &mdash; with a direct line to the issuing company once submitted.</p></div>
-            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-clock"></use></svg></div><h3>Deadlines that don't slip</h3><p>Document sale windows, clarification periods and bid closing, tracked and reminded automatically.</p></div>
+            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-shield"></use></svg></div><h3>@L.T("Verified profiles & ratings")</h3><p>@L.T("Every company is rated on quality, communication, experience and deadlines after each closed request.")</p></div>
+            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-globe"></use></svg></div><h3>@L.T("Bilingual by design")</h3><p>@L.T("Every tender, field and notification exists in English and Arabic, with full right-to-left support.")</p></div>
+            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-message"></use></svg></div><h3>@L.T("Structured requests & chat")</h3><p>@L.T("Bids carry price, delivery days and status — with a direct line to the issuing company once submitted.")</p></div>
+            <div class="feat-card"><div class="feat-icon"><svg class="icon"><use href="#i-clock"></use></svg></div><h3>@L.T("Deadlines that don't slip")</h3><p>@L.T("Document sale windows, clarification periods and bid closing, tracked and reminded automatically.")</p></div>
         </div>
     </div>
 
     <div class="section" id="pricing">
         <div class="section-head">
-            <span class="eyebrow">Pricing</span>
-            <h2>Plans for occasional bidders and full-time procurement teams.</h2>
-            <p>All plans include bilingual tender pages and company ratings. Prices in Omani Rial, billed monthly.</p>
+            <span class="eyebrow">@L.T("Pricing")</span>
+            <h2>@L.T("Plans for occasional bidders and full-time procurement teams.")</h2>
+            <p>@L.T("All plans include bilingual tender pages and company ratings. Prices in Omani Rial, billed monthly.")</p>
         </div>
         <div class="tier-grid">
             @foreach (var tier in Model.Tiers)
@@ -84,28 +84,28 @@
 
     <div class="section" id="contact">
         <div class="section-head">
-            <span class="eyebrow">Contact</span>
-            <h2>Questions about a tender or your account?</h2>
+            <span class="eyebrow">@L.T("Contact")</span>
+            <h2>@L.T("Questions about a tender or your account?")</h2>
         </div>
         <div class="contact-grid">
             <form class="card" style="padding:26px" method="post" asp-page-handler="Contact">
                 <div class="field-stack">
                     <div class="field-row">
-                        <div class="field"><label class="field-label" for="cName">Full name</label><input id="cName" name="name" type="text" placeholder="Sara Al Balushi" required></div>
-                        <div class="field"><label class="field-label" for="cEmail">Work email</label><input id="cEmail" name="email" type="email" placeholder="sara@company.om" required></div>
+                        <div class="field"><label class="field-label" for="cName">@L.T("Full name")</label><input id="cName" name="name" type="text" placeholder="@L.T("Sara Al Balushi")" required></div>
+                        <div class="field"><label class="field-label" for="cEmail">@L.T("Work email")</label><input id="cEmail" name="email" type="email" placeholder="sara@company.om" required></div>
                     </div>
-                    <div class="field"><label class="field-label" for="cSubject">Subject</label>
-                        <select id="cSubject" name="subject"><option>General question</option><option>Tender listing support</option><option>Company verification</option><option>Billing</option></select>
+                    <div class="field"><label class="field-label" for="cSubject">@L.T("Subject")</label>
+                        <select id="cSubject" name="subject"><option value="General question">@L.T("General question")</option><option value="Tender listing support">@L.T("Tender listing support")</option><option value="Company verification">@L.T("Company verification")</option><option value="Billing">@L.T("Billing")</option></select>
                     </div>
-                    <div class="field"><label class="field-label" for="cMsg">Message</label><textarea id="cMsg" name="message" placeholder="Tell us what you need help with&hellip;" required></textarea></div>
-                    <button class="btn btn-primary" type="submit">Send message <svg class="icon" style="width:15px;height:15px"><use href="#i-arrow-right"></use></svg></button>
+                    <div class="field"><label class="field-label" for="cMsg">@L.T("Message")</label><textarea id="cMsg" name="message" placeholder="@L.T("Tell us what you need help with…")" required></textarea></div>
+                    <button class="btn btn-primary" type="submit">@L.T("Send message") <svg class="icon" style="width:15px;height:15px"><use href="#i-arrow-right"></use></svg></button>
                 </div>
             </form>
             <div class="contact-info-card">
-                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-map-pin"></use></svg></span><div><strong>Head office</strong><span>Al Khuwair, Way 3115, Building 412<br>Muscat, Sultanate of Oman</span></div></div>
-                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-mail"></use></svg></span><div><strong>Email</strong><span>hello@munaqasat.om <button type="button" class="copy-btn" onclick="copyText('hello@munaqasat.om', this)">Copy</button></span></div></div>
-                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-phone"></use></svg></span><div><strong>Phone</strong><span>+968 2440 1122 <button type="button" class="copy-btn" onclick="copyText('+96824401122', this)">Copy</button></span></div></div>
-                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-clock"></use></svg></span><div><strong>Support hours</strong><span>Sun&ndash;Thu, 8:00&ndash;17:00 (GST)</span></div></div>
+                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-map-pin"></use></svg></span><div><strong>@L.T("Head office")</strong><span>@L.T("Al Khuwair, Way 3115, Building 412")<br>@L.T("Muscat, Sultanate of Oman")</span></div></div>
+                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-mail"></use></svg></span><div><strong>@L.T("Email")</strong><span>hello@munaqasat.om <button type="button" class="copy-btn" onclick="copyText('hello@munaqasat.om', this)">@L.T("Copy")</button></span></div></div>
+                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-phone"></use></svg></span><div><strong>@L.T("Phone")</strong><span>+968 2440 1122 <button type="button" class="copy-btn" onclick="copyText('+96824401122', this)">@L.T("Copy")</button></span></div></div>
+                <div class="contact-row"><span class="ico"><svg class="icon"><use href="#i-clock"></use></svg></span><div><strong>@L.T("Support hours")</strong><span>@L.T("Sun–Thu, 8:00–17:00 (GST)")</span></div></div>
             </div>
         </div>
     </div>

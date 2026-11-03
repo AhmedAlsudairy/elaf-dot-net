@@ -14,35 +14,35 @@
         <div class="co-tags">
             @foreach (var s in Model.Company.Sectors)
             {
-                <span class="tag tag-blue">@s</span>
+                <span class="tag tag-blue">@L.T(s)</span>
             }
         </div>
     </div>
     <div class="co-summary">
-        <div class="co-overall"><strong>@Model.Company.Overall.ToString("0.0")</strong><span>@Model.Company.RatingCount ratings</span></div>
+        <div class="co-overall"><strong>@Model.Company.Overall.ToString("0.0")</strong><span>@L.T("{0} ratings", Model.Company.RatingCount)</span></div>
         <div class="co-bars">
             @foreach (var kv in Model.Company.Bars)
             {
                 <div class="co-bar-row">
-                    <span class="label">@kv.Key</span>
+                    <span class="label">@L.T(kv.Key)</span>
                     <div class="bar-track"><div class="bar-fill" style="width:@((kv.Value/5*100).ToString("0"))%"></div></div>
                     <span class="num">@kv.Value.ToString("0.0")</span>
                 </div>
             }
         </div>
-        <button type="button" class="btn btn-primary btn-sm" onclick="showToast('Opened conversation with @Model.Company.Name')"><svg class="icon" style="width:15px;height:15px"><use href="#i-message"></use></svg> Message</button>
+        <button type="button" class="btn btn-primary btn-sm" data-toast="@L.T("Opened conversation with {0}", Model.Company.Name)" onclick="showToast(this.dataset.toast)"><svg class="icon" style="width:15px;height:15px"><use href="#i-message"></use></svg> @L.T("Message")</button>
     </div>
 </div>
 
 <div class="tabs">
-    <div class="tab is-active" data-tab-group="company" data-tab-value="about">About</div>
-    <div class="tab" data-tab-group="company" data-tab-value="tenders">Active tenders</div>
-    <div class="tab" data-tab-group="company" data-tab-value="reviews">Reviews</div>
+    <div class="tab is-active" data-tab-group="company" data-tab-value="about">@L.T("About")</div>
+    <div class="tab" data-tab-group="company" data-tab-value="tenders">@L.T("Active tenders")</div>
+    <div class="tab" data-tab-group="company" data-tab-value="reviews">@L.T("Reviews")</div>
 </div>
 
 <div data-tab-panel="company" data-tab-value="about">
     <div class="card" style="padding:22px 24px;margin-bottom:18px">
-        <h3 style="font-size:14px;margin-bottom:10px">About the company</h3>
+        <h3 style="font-size:14px;margin-bottom:10px">@L.T("About the company")</h3>
         <p class="prose">@Model.Company.Bio</p>
     </div>
 
@@ -80,10 +80,10 @@
                 <div class="review-body">
                     <div class="review-head"><strong>@r.By</strong><span>@r.Date.ToString("d MMM yyyy")</span></div>
                     <div class="review-scores">
-                        <span>Quality <b>@r.Quality</b></span>
-                        <span>Communication <b>@r.Communication</b></span>
-                        <span>Experience <b>@r.Experience</b></span>
-                        <span>Deadline <b>@r.Deadline</b></span>
+                        <span>@L.T("Quality") <b>@r.Quality</b></span>
+                        <span>@L.T("Communication") <b>@r.Communication</b></span>
+                        <span>@L.T("Experience") <b>@r.Experience</b></span>
+                        <span>@L.T("Deadline") <b>@r.Deadline</b></span>
                     </div>
                     <p class="review-comment">@r.Comment</p>
                 </div>

@@ -81,6 +81,7 @@ public static class DependencyInjection
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders()
+            .AddErrorDescriber<Munaqasat.Web.Services.Localization.LocalizedIdentityErrorDescriber>()
             .AddClaimsPrincipalFactory<ProfileClaimsPrincipalFactory>();
 
         services.ConfigureApplicationCookie(options =>

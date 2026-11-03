@@ -6,24 +6,33 @@
     // Signed in: the account's role drives the nav. The "Viewing as" switcher (cookie) still lets admins preview other roles.
     var accountRole = currentUser.RoleKey;
     var role = (currentUser.IsAdministrator ? Context.Request.Cookies["munaqasat_role"] : null) ?? accountRole ?? Context.Request.Cookies["munaqasat_role"] ?? "client";
-    var displayName = currentUser.Name ?? "Guest";
+    var displayName = currentUser.Name ?? L.T("Guest");
     var initials = Munaqasat.Web.Services.Companies.CompanyService.Initials(displayName);
     var companyLink = currentUser.CompanyId is { } cid ? "/Companies/Profile/" + cid : null;
     var roleLabels = new Dictionary<string, string> {
-        ["client"] = "Client organization",
-        ["contractor"] = "Service contractor",
-        ["individual"] = "Individual account",
-        ["admin"] = "Platform admin"
+        ["client"] = L.T("Client organization"),
+        ["contractor"] = L.T("Service contractor"),
+        ["individual"] = L.T("Individual account"),
+        ["admin"] = L.T("Platform admin")
     };
     if (!roleLabels.ContainsKey(role)) role = "client";
+    // Same page in the other language: keeps the path and query, replaces lang.
+    var otherLang = L.Code == "ar" ? "en" : "ar";
+    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(Context.Request.QueryString.Value)
+        .Where(q => q.Key != "lang")
+        .ToDictionary(q => q.Key, q => q.Value);
+    query["lang"] = otherLang;
+    var switchLangUrl = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(Context.Request.Path.Value ?? "/", query);
+    var switchLangLabel = otherLang == "ar" ? "العربية" : "English";
+    var brand = L.T("Munaqasat");
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@L.Code" dir="@(L.IsRtl ? "rtl" : "ltr")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@title &middot; Munaqasat</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+    <title>@L.T(title) &middot; @brand</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -34,40 +43,40 @@
         <div id="app-shell">
             <aside class="sidebar" id="sidebar">
                 <div style="display:flex;align-items:center;justify-content:space-between">
-                    <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
-                    <button type="button" class="btn-icon sidebar-close" id="sidebarClose" aria-label="Close menu"><svg class="icon"><use href="#i-x"></use></svg></button>
+                    <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>@brand</div></div>
+                    <button type="button" class="btn-icon sidebar-close" id="sidebarClose" aria-label="@L.T("Close menu")"><svg class="icon"><use href="#i-x"></use></svg></button>
                 </div>
 
                 @if (currentUser.IsAdministrator || !currentUser.IsAuthenticated)
                 {
                 <form id="roleForm">
                     <div class="role-switcher">
-                        <label for="roleSwitch">Viewing as</label>
+                        <label for="roleSwitch">@L.T("Viewing as")</label>
                         <select id="roleSwitch">
-                            <option value="client" selected="@(role == "client" ? "selected" : null)">Client organization</option>
-                            <option value="contractor" selected="@(role == "contractor" ? "selected" : null)">Service contractor</option>
-                            <option value="individual" selected="@(role == "individual" ? "selected" : null)">Individual user</option>
-                            <option value="admin" selected="@(role == "admin" ? "selected" : null)">Platform admin</option>
+                            <option value="client" selected="@(role == "client" ? "selected" : null)">@L.T("Client organization")</option>
+                            <option value="contractor" selected="@(role == "contractor" ? "selected" : null)">@L.T("Service contractor")</option>
+                            <option value="individual" selected="@(role == "individual" ? "selected" : null)">@L.T("Individual user")</option>
+                            <option value="admin" selected="@(role == "admin" ? "selected" : null)">@L.T("Platform admin")</option>
                         </select>
                     </div>
                 </form>
                 }
 
                 <nav class="side-nav">
-                    <a class="side-link @(activeNav == "tenders" ? "is-active" : "")" href="/Tenders"><svg class="icon"><use href="#i-grid"></use></svg> Browse tenders</a>
+                    <a class="side-link @(activeNav == "tenders" ? "is-active" : "")" href="/Tenders"><svg class="icon"><use href="#i-grid"></use></svg> @L.T("Browse tenders")</a>
                     @if (role == "client" || role == "admin")
                     {
-                        <a class="side-link @(activeNav == "tender-form" ? "is-active" : "")" href="/Tenders/Create"><svg class="icon"><use href="#i-plus"></use></svg> Post a tender</a>
+                        <a class="side-link @(activeNav == "tender-form" ? "is-active" : "")" href="/Tenders/Create"><svg class="icon"><use href="#i-plus"></use></svg> @L.T("Post a tender")</a>
                     }
                     @if ((role == "client" || role == "contractor") && companyLink is not null)
                     {
-                        <a class="side-link @(activeNav == "company" ? "is-active" : "")" href="@companyLink"><svg class="icon"><use href="#i-building"></use></svg> Company profile</a>
+                        <a class="side-link @(activeNav == "company" ? "is-active" : "")" href="@companyLink"><svg class="icon"><use href="#i-building"></use></svg> @L.T("Company profile")</a>
                     }
                     @if (role == "admin")
                     {
-                        <a class="side-link @(activeNav == "admin" ? "is-active" : "")" href="/Admin"><svg class="icon"><use href="#i-shield"></use></svg> Admin console</a>
+                        <a class="side-link @(activeNav == "admin" ? "is-active" : "")" href="/Admin"><svg class="icon"><use href="#i-shield"></use></svg> @L.T("Admin console")</a>
                     }
-                    <a class="side-link @(activeNav == "settings" ? "is-active" : "")" href="/Settings"><svg class="icon"><use href="#i-settings"></use></svg> Settings</a>
+                    <a class="side-link @(activeNav == "settings" ? "is-active" : "")" href="/Settings"><svg class="icon"><use href="#i-settings"></use></svg> @L.T("Settings")</a>
                 </nav>
 
                 <div style="margin-top:auto">
@@ -75,12 +84,12 @@
                     {
                         <form method="post" action="/Account/SignOut" style="margin:0">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="side-link" style="width:100%;border:0;background:none;font:inherit;text-align:start"><svg class="icon"><use href="#i-arrow-left"></use></svg> Sign out</button>
+                            <button type="submit" class="side-link" style="width:100%;border:0;background:none;font:inherit;text-align:start"><svg class="icon"><use href="#i-arrow-left"></use></svg> @L.T("Sign out")</button>
                         </form>
                     }
                     else
                     {
-                        <a class="side-link" href="/Account/SignIn"><svg class="icon"><use href="#i-arrow-left"></use></svg> Sign in</a>
+                        <a class="side-link" href="/Account/SignIn"><svg class="icon"><use href="#i-arrow-left"></use></svg> @L.T("Sign in")</a>
                     }
                 </div>
             </aside>
@@ -88,10 +97,10 @@
 
             <div style="flex:1;min-width:0;display:flex;flex-direction:column">
                 <header class="app-topbar">
-                    <button class="btn-icon menu-btn" id="menuBtn" type="button"><svg class="icon"><use href="#i-menu"></use></svg></button>
-                    <div class="app-search"><svg class="icon"><use href="#i-search"></use></svg><input type="text" placeholder="Search tenders, companies, tender no&hellip;" /></div>
+                    <button class="btn-icon menu-btn" id="menuBtn" type="button" aria-label="@L.T("Open menu")"><svg class="icon"><use href="#i-menu"></use></svg></button>
+                    <div class="app-search"><svg class="icon"><use href="#i-search"></use></svg><input type="text" placeholder="@L.T("Search tenders, companies, tender no…")" /></div>
                     <div class="app-topbar-actions">
-                        <div class="icon-btn"><svg class="icon"><use href="#i-globe"></use></svg></div>
+                        <a class="icon-btn" href="@switchLangUrl" title="@switchLangLabel" aria-label="@switchLangLabel" lang="@otherLang"><svg class="icon"><use href="#i-globe"></use></svg></a>
                         <div class="icon-btn"><svg class="icon"><use href="#i-bell"></use></svg><span class="dot"></span></div>
                         <a class="avatar-chip" href="/Settings">
                             <div class="avatar">@initials</div>
@@ -110,30 +119,31 @@
     {
         <header class="shell-topbar">
             <div class="topbar-inner">
-                <a class="brand" href="/"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat<small>Tender marketplace</small></div></a>
+                <a class="brand" href="/"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>@brand<small>@L.T("Tender marketplace")</small></div></a>
                 <nav class="m-nav">
-                    <a href="/">Home</a>
-                    <a href="/Tenders">Browse tenders</a>
-                    <a href="/#pricing">Pricing</a>
-                    <a href="/#contact">Contact</a>
+                    <a href="/">@L.T("Home")</a>
+                    <a href="/Tenders">@L.T("Browse tenders")</a>
+                    <a href="/#pricing">@L.T("Pricing")</a>
+                    <a href="/#contact">@L.T("Contact")</a>
                 </nav>
                 <div class="m-actions">
-                    <button type="button" class="lang-toggle" onclick="toggleLang()"><svg class="icon" style="width:14px;height:14px"><use href="#i-globe"></use></svg><span id="langLabel">EN</span></button>
-                    <a class="btn btn-ghost btn-sm m-signin" href="/Account/SignIn">Sign in</a>
-                    <a class="btn btn-primary btn-sm" href="/Account/SignUp">Get started</a>
-                    <button type="button" class="btn-icon menu-btn" id="marketingMenuBtn" aria-label="Open menu" aria-expanded="false">
+                    <a class="lang-toggle" href="@switchLangUrl" lang="@otherLang"><svg class="icon" style="width:14px;height:14px"><use href="#i-globe"></use></svg><span>@switchLangLabel</span></a>
+                    <a class="btn btn-ghost btn-sm m-signin" href="/Account/SignIn">@L.T("Sign in")</a>
+                    <a class="btn btn-primary btn-sm" href="/Account/SignUp">@L.T("Get started")</a>
+                    <button type="button" class="btn-icon menu-btn" id="marketingMenuBtn" aria-label="@L.T("Open menu")" aria-expanded="false">
                         <svg class="icon"><use href="#i-menu"></use></svg>
                     </button>
                 </div>
             </div>
             <nav class="mobile-nav" id="marketingMobileNav">
-                <a href="/">Home</a>
-                <a href="/Tenders">Browse tenders</a>
-                <a href="/#pricing">Pricing</a>
-                <a href="/#contact">Contact</a>
+                <a href="/">@L.T("Home")</a>
+                <a href="/Tenders">@L.T("Browse tenders")</a>
+                <a href="/#pricing">@L.T("Pricing")</a>
+                <a href="/#contact">@L.T("Contact")</a>
                 <div class="mobile-nav-actions">
-                    <a class="btn btn-secondary btn-block" href="/Account/SignIn">Sign in</a>
-                    <a class="btn btn-primary btn-block" href="/Account/SignUp">Get started</a>
+                    <a class="btn btn-secondary btn-block" href="/Account/SignIn">@L.T("Sign in")</a>
+                    <a class="btn btn-primary btn-block" href="/Account/SignUp">@L.T("Get started")</a>
+                    <a class="btn btn-ghost btn-block" href="@switchLangUrl" lang="@otherLang"><svg class="icon" style="width:14px;height:14px"><use href="#i-globe"></use></svg> @switchLangLabel</a>
                 </div>
             </nav>
         </header>
@@ -143,19 +153,19 @@
         <footer class="m-footer">
             <div class="footer-inner">
                 <div class="footer-col">
-                    <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>Munaqasat</div></div>
-                    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:14px;max-width:32ch">The bilingual tender marketplace connecting Omani organizations with qualified contractors and suppliers.</p>
+                    <div class="brand"><span class="brand-mark"><svg class="icon" style="stroke:#fff"><use href="#i-briefcase"></use></svg></span><div>@brand</div></div>
+                    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:14px;max-width:32ch">@L.T("The bilingual tender marketplace connecting Omani organizations with qualified contractors and suppliers.")</p>
                 </div>
-                <div class="footer-col"><h4>Product</h4><a href="/Tenders">Browse tenders</a><a href="/#pricing">Pricing</a><a href="/Account/SignUp">List your company</a></div>
-                <div class="footer-col"><h4>Company</h4><a href="/#contact">Contact</a><a href="/Account/SignIn">Admin login</a></div>
-                <div class="footer-col"><h4>Legal</h4><a href="#">Terms of service</a><a href="#">Privacy policy</a></div>
+                <div class="footer-col"><h4>@L.T("Product")</h4><a href="/Tenders">@L.T("Browse tenders")</a><a href="/#pricing">@L.T("Pricing")</a><a href="/Account/SignUp">@L.T("List your company")</a></div>
+                <div class="footer-col"><h4>@L.T("Company")</h4><a href="/#contact">@L.T("Contact")</a><a href="/Account/SignIn">@L.T("Admin login")</a></div>
+                <div class="footer-col"><h4>@L.T("Legal")</h4><a href="#">@L.T("Terms of service")</a><a href="#">@L.T("Privacy policy")</a></div>
             </div>
-            <div class="footer-bottom"><span>&copy; 2026 Munaqasat. All rights reserved.</span><span>Muscat, Oman</span></div>
+            <div class="footer-bottom"><span>&copy; 2026 @brand. @L.T("All rights reserved.")</span><span>@L.T("Muscat, Oman")</span></div>
         </footer>
     }
 
-    <div id="toast-message" hidden>@TempData["Toast"]</div>
-    <div class="toast" id="toast"><svg class="icon"><use href="#i-check"></use></svg><span id="toastText">Saved</span></div>
+    <div id="toast-message" hidden>@L.T(TempData["Toast"] as string)</div>
+    <div class="toast" id="toast"><svg class="icon"><use href="#i-check"></use></svg><span id="toastText">@L.T("Saved")</span></div>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

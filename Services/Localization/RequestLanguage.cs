@@ -8,6 +8,15 @@ namespace Munaqasat.Web.Services.Localization;
 public interface IRequestLanguage
 {
     string Code { get; }
+
+    /// <summary>True when the request language is written right to left (Arabic).</summary>
+    bool IsRtl { get; }
+
+    /// <summary>Interface text: the Arabic for <paramref name="english"/> when the request is in Arabic, else the English.</summary>
+    string T(string? english);
+
+    /// <summary><see cref="T(string?)"/> then <see cref="string.Format(string, object?[])"/>.</summary>
+    string T(string english, params object?[] args);
 }
 
 /// <summary>
@@ -24,6 +33,25 @@ public sealed class RequestLanguage : IRequestLanguage
     public RequestLanguage(IHttpContextAccessor accessor) => _code = new Lazy<string>(() => Resolve(accessor.HttpContext));
 
     public string Code => _code.Value;
+
+    public bool IsRtl => Code == "ar";
+
+    public string T(string? english) => UiText.Translate(english, Code);
+
+    public string T(string english, params object?[] args) => string.Format(Culture(Code), T(english), args);
+
+    /// <summary>
+    /// Formatting culture for a language. Arabic uses Arabic month names but keeps Western digits and
+    /// "." / "," separators, so amounts read the same in both languages.
+    /// </summary>
+    public static System.Globalization.CultureInfo Culture(string code)
+    {
+        if (code != "ar") return System.Globalization.CultureInfo.InvariantCulture;
+        var culture = (System.Globalization.CultureInfo)System.Globalization.CultureInfo.GetCultureInfo("ar-OM").Clone();
+        culture.NumberFormat = (System.Globalization.NumberFormatInfo)System.Globalization.CultureInfo.InvariantCulture.NumberFormat.Clone();
+        culture.DateTimeFormat.Calendar = new System.Globalization.GregorianCalendar();
+        return culture;
+    }
 
     private static string Resolve(HttpContext? http)
     {

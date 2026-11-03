@@ -65,6 +65,45 @@ dotnet dotnet-ef migrations add <Name> -o Infrastructure/Persistence/Migrations
 | Post a tender | Client and Administrator roles |
 | Admin console | Administrator role |
 
+## Guidelines
+
+Conventions for anyone changing this codebase.
+
+**Schema**
+- `docs/schema.dbml` is the source of truth. Change it first, then the entity in `Domain/`, its configuration in `Infrastructure/Persistence/Configurations/`, then add a migration.
+- Mark anything the ERD does not have with `note: 'added'` in the DBML.
+- Never edit a migration that has run on a shared database. Add a new one.
+- Every new table gets text ids (`Ids.New()`), `timestamptz` columns, and `IHasTimestamps` if it has `updated_at` (also add it to the `set_updated_at` trigger list).
+- User-facing text goes in a `*_translations` table, never a plain column. Read it with `Translations.Pick` so the language fallback stays the same everywhere.
+
+**Code**
+- Pages call services; pages never touch `ApplicationDbContext` directly.
+- Services return the view models in `Models/`. Keep those classes as the contract with the UI: add properties, don't rename or remove them without updating the views.
+- Services report expected failures with `OperationResult.Failure("message")`. Exceptions are for bugs.
+- Read the signed-in user through `ICurrentUser`, never from cookies or query strings.
+- Dates: store UTC, show Oman time (`SystemClock.OmanOffset`).
+
+**Security**
+- No secrets in the repository: user secrets locally, environment variables in hosting.
+- Every POST has an antiforgery token. Razor forms add it automatically; `fetch` calls send it (see `adminSetStatus` in `site.js`).
+- Anything that changes state is a POST, including sign out.
+- Protect pages in `Program.cs` (`AuthorizeFolder` / `AuthorizePage`), and check ownership again in the service.
+
+**UX**
+- Show real data or nothing. No hard-coded counts, placeholder deltas or sample ids in views.
+- No dead controls. A button that does nothing yet is removed until its feature exists.
+- Every table and list has an empty state.
+- Status pills use the shared classes (`status-open`, `status-closed`, `status-draft`, `status-pending`, `status-accepted`, `status-rejected`) and come from the view model (`Tender.Status`/`StatusClass`, `TenderRequestRow.StatusClass`), not from the view.
+- Everything must work in Arabic (RTL). Use logical CSS (`text-align:start`, `margin-inline-*`) instead of left/right.
+- Confirm actions with the toast (`showToast`) and show a readable error when a request fails.
+
+## Not built yet
+
+- Forgot password and email confirmation (needs an email sender)
+- Two-factor authentication (the Settings toggle is a placeholder)
+- Chat, notifications and billing (tables exist; pages are UI only)
+- Admin editing and deleting of tenders and users
+
 ## Configuration
 
 | Key | Where it belongs | Purpose |

@@ -30,6 +30,14 @@ public class Tender
     public string Description { get; set; } = "";
     public List<CustomField> CustomFields { get; set; } = new();
 
+    /// <summary>Open, Closed or Draft.</summary>
+    public string Status { get; set; } = "Open";
+    public string StatusClass => Status switch
+    {
+        "Draft" => "status-draft",
+        "Closed" => "status-closed",
+        _ => "status-open"
+    };
     public string ScoreTier => Score >= 90 ? "green" : (Score >= 75 ? "blue" : "orange");
     public string CategoryTagClass => Category switch
     {

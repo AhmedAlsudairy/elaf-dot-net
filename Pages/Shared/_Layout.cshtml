@@ -73,7 +73,10 @@
                 <div style="margin-top:auto">
                     @if (currentUser.IsAuthenticated)
                     {
-                        <a class="side-link" href="/Account/SignOut"><svg class="icon"><use href="#i-arrow-left"></use></svg> Sign out</a>
+                        <form method="post" action="/Account/SignOut" style="margin:0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="side-link" style="width:100%;border:0;background:none;font:inherit;text-align:start"><svg class="icon"><use href="#i-arrow-left"></use></svg> Sign out</button>
+                        </form>
                     }
                     else
                     {

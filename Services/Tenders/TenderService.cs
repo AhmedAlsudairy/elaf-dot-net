@@ -285,6 +285,8 @@ public sealed class TenderService : ITenderService
             Closing = ToOmanDate(t.BidSubmissionClosing),
             DocFee = t.DocumentFee is { } fee ? $"OMR {fee.ToString("0.000", CultureInfo.InvariantCulture)}" : "None",
             Bond = t.BondPercentage is { } bond ? $"{bond.ToString("0.0", CultureInfo.InvariantCulture)}% of quoted value" : "Not required",
+            Status = t.Status != TenderStatuses.Published ? "Draft"
+                : t.BidSubmissionClosing < _clock.UtcNow ? "Closed" : "Open",
             IsNew = _clock.Today.DayNumber - t.PublishedDate.DayNumber <= NewWindow.Days,
             Icon = t.ProcurementCategoryCode switch
             {

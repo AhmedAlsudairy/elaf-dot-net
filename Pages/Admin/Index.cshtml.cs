@@ -26,6 +26,7 @@ public class IndexModel : PageModel
     public List<TenderRequestRow> PendingRequests { get; set; } = new();
     public List<CompanyRow> Companies { get; set; } = new();
     public List<UserRow> Users { get; set; } = new();
+    public int OpenTenderCount => Tenders.Count(t => t.Status == "Open");
 
     public async Task OnGetAsync()
     {

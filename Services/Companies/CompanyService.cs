@@ -108,6 +108,7 @@ public sealed class CompanyService : ICompanyService
 
         return companies.Select(c => new CompanyRow
         {
+            Id = c.Id,
             Name = Translations.Pick(c.Translations, lang, c.DefaultLanguage)?.CompanyTitle ?? c.CompanyEmail,
             Sectors = string.Join(", ", (c.Sectors ?? new List<string>()).Take(2)),
             Rating = Math.Round(c.AvgOverallRating, 1),

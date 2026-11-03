@@ -17,7 +17,7 @@
         <div class="detail-header">
             <div>
                 <div style="display:flex;gap:8px;margin-bottom:10px">
-                    <span class="pill-status status-open">Open</span>
+                    <span class="pill-status @Model.Tender.StatusClass">@Model.Tender.Status</span>
                     <span class="tag @Model.Tender.CategoryTagClass">@Model.Tender.CategoryLabel</span>
                     @if (Model.Tender.IsNew)
                     {

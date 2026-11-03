@@ -10,7 +10,9 @@ public class SignOutModel : PageModel
 
     public SignOutModel(IAccountService accounts) => _accounts = accounts;
 
-    public async Task<IActionResult> OnGetAsync()
+    public IActionResult OnGet() => Redirect("/");
+
+    public async Task<IActionResult> OnPostAsync()
     {
         await _accounts.SignOutAsync();
         Response.Cookies.Delete("munaqasat_role");
